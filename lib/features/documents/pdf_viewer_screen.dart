@@ -9,6 +9,8 @@ import '../../core/widgets/custom_dialogs.dart';
 import '../../models/scanned_document.dart';
 import '../../services/storage_service.dart';
 
+import '../chat/screens/document_chat_screen.dart';
+
 class PdfViewerScreen extends StatefulWidget {
   final ScannedDocument document;
 
@@ -35,6 +37,22 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
     if (await file.exists()) {
       await SharePlus.instance.share(
         ShareParams(files: [XFile(_doc.filePath)], text: _doc.title),
+      );
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('File does not exist')),
+        );
+      }
+    }
+  }
+
+  Future<void> _printDocument() async {
+    final file = File(_doc.filePath);
+    if (await file.exists()) {
+      await Printing.layoutPdf(
+        onLayout: (format) => file.readAsBytes(),
+        name: '${_doc.title}.pdf',
       );
     } else {
       if (mounted) {
@@ -183,20 +201,11 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    _doc.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(Icons.edit_outlined, size: 16, color: AppColors.secondaryText),
-              ],
+            child: Text(
+              _doc.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -223,6 +232,13 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             icon: const Icon(Icons.more_vert),
             onSelected: (val) {
               switch (val) {
+                case 'ask_ai':
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DocumentChatScreen(document: _doc),
+                    ),
+                  );
+                  break;
                 case 'rename':
                   _renameDocument();
                   break;
@@ -238,6 +254,22 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               }
             },
             itemBuilder: (ctx) => [
+              const PopupMenuItem(
+                value: 'ask_ai',
+                child: Row(
+                  children: [
+                    Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                    SizedBox(width: 12),
+                    Text(
+                      'Ask AI',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               const PopupMenuItem(
                 value: 'rename',
                 child: Row(
@@ -296,10 +328,153 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
               canChangeOrientation: false,
               canDebug: false,
               dynamicLayout: false,
+              useActions: false,
               scrollViewDecoration: const BoxDecoration(
                 color: Color(0xFF1E2026),
               ),
             ),
+      bottomNavigationBar: fileExists ? _buildBottomBar() : null,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF388BFF), Color(0xFF176BFF), Color(0xFF0A47B8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.35),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF176BFF).withValues(alpha: 0.45),
+                blurRadius: 18,
+                spreadRadius: 1,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => DocumentChatScreen(document: _doc),
+                  ),
+                );
+              },
+              child: const Tooltip(
+                message: 'Ask AI',
+                child: SizedBox(
+                  width: 58,
+                  height: 58,
+                  child: Center(
+                    child: Icon(
+                      Icons.auto_awesome_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFEA580C).withValues(alpha: 0.3),
+            blurRadius: 18,
+            offset: const Offset(0, -4),
+          ),
+        ],
+        border: Border(
+          top: BorderSide(
+            color: Colors.white.withValues(alpha: 0.22),
+            width: 1.2,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildBarActionButton(
+                icon: Icons.print_rounded,
+                label: 'Print',
+                onTap: _printDocument,
+              ),
+              Container(
+                height: 24,
+                width: 1,
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
+              _buildBarActionButton(
+                icon: Icons.share_rounded,
+                label: 'Share',
+                onTap: _shareDocument,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBarActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: Colors.white.withValues(alpha: 0.2),
+        highlightColor: Colors.white.withValues(alpha: 0.1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

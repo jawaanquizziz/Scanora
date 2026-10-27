@@ -140,18 +140,32 @@ class CustomDialogs {
               onPressed: () => Navigator.of(ctx).pop(null),
               child: const Text('Cancel'),
             ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.check_rounded, size: 18),
-              label: const Text('Save PDF'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.lensOrange,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            Container(
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              onPressed: () {
-                final text = controller.text.trim();
-                Navigator.of(ctx).pop(text.isNotEmpty ? text : defaultName);
-              },
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.check_rounded, size: 18),
+                label: const Text('Save PDF'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onPressed: () {
+                  final text = controller.text.trim();
+                  Navigator.of(ctx).pop(text.isNotEmpty ? text : defaultName);
+                },
+              ),
             ),
           ],
         );

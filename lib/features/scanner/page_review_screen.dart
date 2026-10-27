@@ -272,18 +272,32 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: ElevatedButton.icon(
-                onPressed: _saveDocument,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBlue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-                icon: const Icon(Icons.check, size: 18),
-                label: const Text('Save PDF'),
+                child: ElevatedButton.icon(
+                  onPressed: _saveDocument,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: const Icon(Icons.check, size: 18),
+                  label: const Text('Save PDF'),
+                ),
               ),
             ),
           ],

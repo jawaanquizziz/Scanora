@@ -1,17 +1,17 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../core/utils/file_utils.dart';
 import '../../core/widgets/custom_dialogs.dart';
+import '../../core/widgets/document_thumbnail_view.dart';
 import '../../core/widgets/download_progress_dialog.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/pdf_document_icon.dart';
 import '../../core/widgets/scanora_logo.dart';
 import '../../models/scanned_document.dart';
 import '../../services/storage_service.dart';
+import '../chat/screens/document_chat_screen.dart';
 import 'pdf_viewer_screen.dart';
 
 enum DocumentSort { newest, oldest, nameAsc }
@@ -137,6 +137,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     if (confirm) {
       await StorageService().deleteDocument(doc.id);
     }
+  }
+
+  void _openChatWithDocument(ScannedDocument doc) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DocumentChatScreen(document: doc),
+      ),
+    );
   }
 
   @override
@@ -343,7 +351,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           child: Row(
             children: [
               // Thumbnail
-              _buildThumbnail(doc, width: 56, height: 72),
+              _buildThumbnail(
+                doc,
+                width: 56,
+                height: 72,
+                borderRadius: BorderRadius.circular(8),
+              ),
               const SizedBox(width: 14),
 
               // Info
@@ -418,7 +431,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  _buildThumbnail(doc, width: double.infinity, height: double.infinity),
+                  _buildThumbnail(
+                    doc,
+                    width: double.infinity,
+                    height: double.infinity,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+                  ),
                   // Cloud status icon in top-right corner matching Image 2
                   const Positioned(
                     top: 6,
@@ -462,26 +480,18 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     );
   }
 
-  Widget _buildThumbnail(ScannedDocument doc, {required double width, required double height}) {
-    if (!kIsWeb && doc.thumbnailPath != null && File(doc.thumbnailPath!).existsSync()) {
-      return ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
-        child: Image.file(
-          File(doc.thumbnailPath!),
-          width: width,
-          height: height,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
-    return Container(
+  Widget _buildThumbnail(
+    ScannedDocument doc, {
+    required double width,
+    required double height,
+    BorderRadius? borderRadius,
+  }) {
+    return DocumentThumbnailView(
+      doc: doc,
       width: width,
       height: height,
-      color: const Color(0xFFFBFBFB),
-      child: CustomPaint(
-        painter: _DynamicPaperPainter(title: doc.title),
-      ),
+      borderRadius: borderRadius ?? BorderRadius.circular(8),
+      showBadge: true,
     );
   }
 
@@ -492,6 +502,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       icon: const Icon(Icons.more_vert, color: AppColors.secondaryText),
       onSelected: (val) {
         switch (val) {
+          case 'ask_ai':
+            _openChatWithDocument(doc);
+            break;
           case 'download':
             _openDocumentWithDownload(doc);
             break;
@@ -515,6 +528,22 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         }
       },
       itemBuilder: (ctx) => [
+        const PopupMenuItem(
+          value: 'ask_ai',
+          child: Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 20, color: AppColors.primary),
+              SizedBox(width: 12),
+              Text(
+                'Ask AI',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
         const PopupMenuItem(
           value: 'download',
           child: Row(
@@ -579,53 +608,4 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       ],
     );
   }
-}
-
-class _DynamicPaperPainter extends CustomPainter {
-  final String title;
-
-  _DynamicPaperPainter({required this.title});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = const Color(0xFFFBFBFB);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
-
-    final marginPaint = Paint()
-      ..color = const Color(0xFFFFCDD2)
-      ..strokeWidth = 1.0;
-    canvas.drawLine(Offset(size.width * 0.16, 0), Offset(size.width * 0.16, size.height), marginPaint);
-
-    final linePaint = Paint()
-      ..color = const Color(0xFFE2E8F0)
-      ..strokeWidth = 0.8;
-
-    final lineSpacing = size.height / 18;
-    for (double y = lineSpacing * 2; y < size.height; y += lineSpacing) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
-    }
-
-    final inkPaint = Paint()
-      ..color = const Color(0xFF1E293B)
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
-
-    final blueInk = Paint()
-      ..color = const Color(0xFF1D4ED8)
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
-
-    for (int i = 3; i <= 15; i++) {
-      final y = lineSpacing * i - 2;
-      final strokeLen = (i % 3 == 0) ? size.width * 0.65 : size.width * 0.74;
-      canvas.drawLine(
-        Offset(size.width * 0.20, y),
-        Offset(size.width * 0.20 + strokeLen, y),
-        (i % 2 == 0) ? blueInk : inkPaint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -10,6 +10,7 @@ import '../../models/scanned_document.dart';
 import '../../services/file_service.dart';
 import '../../services/image_service.dart';
 import '../../services/pdf_service.dart';
+import '../../services/pdf_thumbnail_service.dart';
 import '../../services/storage_service.dart';
 import 'capture_service.dart';
 import 'page_review_screen.dart';
@@ -147,11 +148,16 @@ class MlKitScannerService {
       final fileSize = await pdfFile.length();
       final docId = 'doc_${DateTime.now().millisecondsSinceEpoch}';
 
-      // Generate thumbnail from first scanned page
+      // Generate thumbnail from first scanned page or rasterize from PDF
       String? thumbPath;
       if (images.isNotEmpty) {
         try {
           thumbPath = await ImageService().createThumbnail(images.first, docId);
+        } catch (_) {}
+      }
+      if (thumbPath == null && finalPdfPath.isNotEmpty) {
+        try {
+          thumbPath = await PdfThumbnailService().createThumbnailFromPdf(finalPdfPath, docId);
         } catch (_) {}
       }
 

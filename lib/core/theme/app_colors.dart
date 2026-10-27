@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Brand colors matching Scanora logo
+  // Brand colors matching Scanora specifications
+  static const Color primary = Color(0xFF176BFF); // Scanora Primary Blue (#176BFF)
   static const Color primaryBlue = Color(0xFFEA580C); // Warm Brand Orange
   static const Color primaryDark = Color(0xFFC2410C); // Deep Burnt Orange
   static const Color primaryLight = Color(0xFFFFEDD5); // Light Cream/Orange
@@ -24,6 +25,29 @@ class AppColors {
   static const Color cardBorderDark = Color(0xFF2C303D);
   static const Color cardBgLight = Color(0xFFFFFFFF);
   static const Color cardBgDark = Color(0xFF1C1F28);
+
+  // Signature Sunset Aurora Gradients
+  static const LinearGradient primaryGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      Color(0xFFFF7A3D), // Vibrant warm coral-orange
+      Color(0xFFEA580C), // Scanora signature orange
+      Color(0xFFDC2626), // Deep warm crimson
+      Color(0xFF991B1B), // Rich elegant ruby
+    ],
+  );
+
+  static const LinearGradient primaryGradientVertical = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFFFF7A3D),
+      Color(0xFFEA580C),
+      Color(0xFFDC2626),
+      Color(0xFF991B1B),
+    ],
+  );
 
   // Dark mode colors
   static const Color darkBackground = Color(0xFF12141A);

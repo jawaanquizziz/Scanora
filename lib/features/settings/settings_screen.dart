@@ -4,6 +4,8 @@ import '../../core/utils/file_utils.dart';
 import '../../services/file_service.dart';
 import '../../services/storage_service.dart';
 
+import '../chat/services/document_text_extraction_service.dart';
+
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -38,10 +40,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _clearCache() async {
     await FileService().clearTempFiles();
+    await DocumentTextExtractionService().clearAllCache();
     await _loadStorageStats();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Temporary cache cleared')),
+        const SnackBar(content: Text('Temporary cache and extracted text cleared')),
       );
     }
   }

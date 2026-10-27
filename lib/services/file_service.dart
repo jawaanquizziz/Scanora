@@ -23,27 +23,42 @@ class FileService {
       if (!await _docsDir!.exists()) await _docsDir!.create(recursive: true);
       if (!await _thumbnailsDir!.exists()) await _thumbnailsDir!.create(recursive: true);
       if (!await _tempDir!.exists()) await _tempDir!.create(recursive: true);
-    } catch (_) {}
+    } catch (_) {
+      // Fallback for background isolates or platforms where path_provider is unavailable
+      final sysTemp = Directory.systemTemp;
+      _tempDir ??= Directory('${sysTemp.path}/scanora_temp');
+      _thumbnailsDir ??= Directory('${sysTemp.path}/scanora_thumbnails');
+      _docsDir ??= Directory('${sysTemp.path}/scanora_documents');
+      try {
+        if (!await _tempDir!.exists()) await _tempDir!.create(recursive: true);
+        if (!await _thumbnailsDir!.exists()) await _thumbnailsDir!.create(recursive: true);
+        if (!await _docsDir!.exists()) await _docsDir!.create(recursive: true);
+      } catch (_) {}
+    }
   }
 
   Future<String> get documentsPath async {
     if (_docsDir == null) await init();
-    return _docsDir!.path;
+    return _docsDir?.path ?? Directory.systemTemp.path;
   }
 
   Future<String> get thumbnailsPath async {
     if (_thumbnailsDir == null) await init();
-    return _thumbnailsDir!.path;
+    return _thumbnailsDir?.path ?? Directory.systemTemp.path;
   }
 
   Future<String> get tempPath async {
     if (_tempDir == null) await init();
-    return _tempDir!.path;
+    return _tempDir?.path ?? Directory.systemTemp.path;
   }
 
   Future<String> createTempImagePath(String extension) async {
     final tPath = await tempPath;
     final id = DateTime.now().millisecondsSinceEpoch;
+    final dir = Directory(tPath);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
     return '$tPath/temp_$id.$extension';
   }
 

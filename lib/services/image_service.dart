@@ -11,7 +11,8 @@ class ImageService {
 
   /// Process an image with crop, rotation, and filter, saving to a new temp file
   Future<String> processPage(ScanPage page) async {
-    return compute(_processPageIsolate, page);
+    final outputPath = await FileService().createTempImagePath('jpg');
+    return compute(_processPageIsolate, _ProcessPageParams(page, outputPath));
   }
 
   /// Fast preview generation for UI filter picker
@@ -21,8 +22,15 @@ class ImageService {
 
   /// Create a compact thumbnail for documents list
   Future<String> createThumbnail(String sourceImagePath, String docId) async {
-    return compute(_thumbnailIsolate, _ThumbnailParams(sourceImagePath, docId));
+    final outputPath = await FileService().createThumbnailPath(docId);
+    return compute(_thumbnailIsolate, _ThumbnailParams(sourceImagePath, outputPath));
   }
+}
+
+class _ProcessPageParams {
+  final ScanPage page;
+  final String outputPath;
+  _ProcessPageParams(this.page, this.outputPath);
 }
 
 class _FilterPreviewParams {
@@ -33,11 +41,12 @@ class _FilterPreviewParams {
 
 class _ThumbnailParams {
   final String sourceImagePath;
-  final String docId;
-  _ThumbnailParams(this.sourceImagePath, this.docId);
+  final String outputPath;
+  _ThumbnailParams(this.sourceImagePath, this.outputPath);
 }
 
-Future<String> _processPageIsolate(ScanPage page) async {
+Future<String> _processPageIsolate(_ProcessPageParams params) async {
+  final page = params.page;
   final file = File(page.originalImagePath);
   if (!await file.exists()) {
     throw Exception('Original image file not found: ${page.originalImagePath}');
@@ -80,12 +89,10 @@ Future<String> _processPageIsolate(ScanPage page) async {
   // 3. Apply Filter
   image = _applyFilter(image, page.filter);
 
-  // 4. Save to temp file
-  final fileService = FileService();
-  final outPath = await fileService.createTempImagePath('jpg');
+  // 4. Save to target file directly without isolate platform channel calls
   final encodedBytes = img.encodeJpg(image, quality: 88);
-  await File(outPath).writeAsBytes(encodedBytes);
-  return outPath;
+  await File(params.outputPath).writeAsBytes(encodedBytes);
+  return params.outputPath;
 }
 
 img.Image _applyFilter(img.Image input, FilterType filter) {
@@ -132,8 +139,6 @@ Future<String> _thumbnailIsolate(_ThumbnailParams params) async {
   if (image == null) throw Exception('Cannot decode thumbnail image');
 
   final thumb = img.copyResize(image, width: 320);
-  final fileService = FileService();
-  final thumbPath = await fileService.createThumbnailPath(params.docId);
-  await File(thumbPath).writeAsBytes(img.encodeJpg(thumb, quality: 80));
-  return thumbPath;
+  await File(params.outputPath).writeAsBytes(img.encodeJpg(thumb, quality: 80));
+  return params.outputPath;
 }

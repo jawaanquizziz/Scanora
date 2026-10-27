@@ -1,15 +1,15 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../core/utils/file_utils.dart';
 import '../../core/widgets/custom_dialogs.dart';
+import '../../core/widgets/document_thumbnail_view.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/scanora_logo.dart';
 import '../../models/scanned_document.dart';
 import '../../services/storage_service.dart';
+import '../chat/screens/document_chat_screen.dart';
 import '../documents/pdf_viewer_screen.dart';
 import '../scanner/capture_service.dart';
 import '../scanner/mlkit_scanner_service.dart';
@@ -33,10 +33,49 @@ class HomeScreen extends StatelessWidget {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Document "${doc.title}" saved to library!'),
+          behavior: SnackBarBehavior.floating,
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 1,
+            ),
+          ),
+          backgroundColor: const Color(0xFF1E222D),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          content: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppColors.lensOrange.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.lensOrange,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Document "${doc.title}" saved to library!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
           action: SnackBarAction(
             label: 'Open',
+            textColor: AppColors.lensOrange,
             onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => PdfViewerScreen(document: doc),
@@ -105,7 +144,7 @@ class HomeScreen extends StatelessWidget {
                         title: 'Scan Document',
                         subtitle: 'Camera capture',
                         icon: Icons.camera_alt_rounded,
-                        backgroundColor: AppColors.lensOrange,
+                        gradient: AppColors.primaryGradientVertical,
                         foregroundColor: Colors.white,
                         onTap: () => _startCameraScan(context),
                       ),
@@ -179,7 +218,8 @@ class HomeScreen extends StatelessWidget {
     required String title,
     required String subtitle,
     required IconData icon,
-    required Color backgroundColor,
+    Color? backgroundColor,
+    Gradient? gradient,
     required Color foregroundColor,
     required VoidCallback onTap,
     bool hasBorder = false,
@@ -187,7 +227,7 @@ class HomeScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
-      color: backgroundColor,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -195,9 +235,22 @@ class HomeScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
+            color: gradient == null ? (backgroundColor ?? Colors.transparent) : null,
+            gradient: gradient,
             borderRadius: BorderRadius.circular(16),
             border: hasBorder
                 ? Border.all(color: isDark ? AppColors.darkBorder : AppColors.border)
+                : (gradient != null
+                    ? Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.2)
+                    : null),
+            boxShadow: gradient != null
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFFEA580C).withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
                 : null,
           ),
           child: Column(
@@ -282,7 +335,13 @@ class HomeScreen extends StatelessWidget {
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.more_vert, color: AppColors.secondaryText),
                   onSelected: (val) {
-                    if (val == 'open') {
+                    if (val == 'ask_ai') {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DocumentChatScreen(document: doc),
+                        ),
+                      );
+                    } else if (val == 'open') {
                       _openDocument(context, doc);
                     } else if (val == 'share') {
                       SharePlus.instance.share(
@@ -290,11 +349,29 @@ class HomeScreen extends StatelessWidget {
                       );
                     } else if (val == 'rename') {
                       _renameDocument(context, doc);
+                    } else if (val == 'move') {
+                      _moveToFolder(context, doc);
                     } else if (val == 'delete') {
                       _deleteDocument(context, doc);
                     }
                   },
                   itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'ask_ai',
+                      child: Row(
+                        children: [
+                          Icon(Icons.auto_awesome, size: 20, color: AppColors.primary),
+                          SizedBox(width: 12),
+                          Text(
+                            'Ask AI',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const PopupMenuItem(
                       value: 'open',
                       child: Row(
@@ -326,6 +403,17 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const PopupMenuItem(
+                      value: 'move',
+                      child: Row(
+                        children: [
+                          Icon(Icons.drive_file_move_outlined, size: 20),
+                          SizedBox(width: 12),
+                          Text('Move to Folder'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
@@ -346,55 +434,12 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildThumbnail(BuildContext context, ScannedDocument doc) {
-    if (!kIsWeb && doc.thumbnailPath != null && File(doc.thumbnailPath!).existsSync()) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.file(
-          File(doc.thumbnailPath!),
-          width: 52,
-          height: 68,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return DocumentThumbnailView(
+      doc: doc,
       width: 52,
       height: 68,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.lensOrangeLight,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isDark ? AppColors.lensOrange.withAlpha(60) : AppColors.lensOrange.withAlpha(100),
-          width: 1,
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.picture_as_pdf_rounded, color: AppColors.lensOrange, size: 26),
-            const SizedBox(height: 2),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-              decoration: BoxDecoration(
-                color: AppColors.lensOrange,
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: const Text(
-                'PDF',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 8,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      borderRadius: BorderRadius.circular(8),
+      showBadge: true,
     );
   }
 
@@ -413,6 +458,25 @@ class HomeScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Document renamed to "$sanitized"')),
+        );
+      }
+    }
+  }
+
+  Future<void> _moveToFolder(BuildContext context, ScannedDocument doc) async {
+    final storage = StorageService();
+    final selectedFolder = await CustomDialogs.showFolderSelectionSheet(
+      context: context,
+      folders: storage.folders,
+      currentFolderId: doc.folderId,
+    );
+
+    if (selectedFolder != null) {
+      final targetFolderId = selectedFolder == '__ROOT__' ? null : selectedFolder;
+      await storage.moveDocumentToFolder(doc.id, targetFolderId);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Moved successfully')),
         );
       }
     }

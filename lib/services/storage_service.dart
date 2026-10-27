@@ -106,6 +106,14 @@ class StorageService extends ChangeNotifier {
   }
 
   // Document Operations
+  ScannedDocument? getDocument(String docId) {
+    try {
+      return _documents.firstWhere((d) => d.id == docId);
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> addDocument(ScannedDocument doc) async {
     _documents.insert(0, doc);
     await _saveDocuments();
