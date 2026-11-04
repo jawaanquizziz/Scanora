@@ -27,6 +27,7 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
   late List<ScanPage> _pages;
   int _currentPageIndex = 0;
   bool _isProcessing = false;
+  bool _hasSaved = false;
 
   @override
   void initState() {
@@ -35,6 +36,7 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
   }
 
   Future<bool> _onWillPop() async {
+    if (_hasSaved) return true;
     final confirmed = await CustomDialogs.showConfirmDialog(
       context: context,
       title: 'Discard Scan?',
@@ -217,6 +219,9 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
     );
 
     if (savedDoc != null && mounted) {
+      setState(() {
+        _hasSaved = true;
+      });
       // Show success sheet and give user option to view PDF or return home
       SaveDialog.showSuccessSheet(
         context: context,
@@ -227,6 +232,11 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
               builder: (_) => PdfViewerScreen(document: savedDoc),
             ),
           );
+        },
+        onDone: () {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
         },
       );
     }

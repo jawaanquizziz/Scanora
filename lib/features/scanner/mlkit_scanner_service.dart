@@ -8,6 +8,7 @@ import '../../core/utils/file_utils.dart';
 import '../../core/widgets/custom_dialogs.dart';
 import '../../models/scanned_document.dart';
 import '../../services/file_service.dart';
+import '../../services/google_drive_service.dart';
 import '../../services/image_service.dart';
 import '../../services/pdf_service.dart';
 import '../../services/pdf_thumbnail_service.dart';
@@ -30,21 +31,11 @@ class MlKitScanResult {
 /// Service that encapsulates the Google ML Kit Document Scanner API on Android,
 /// with fallback support for non-Android platforms.
 class MlKitScannerService {
-  /// Starts the Google ML Kit Document Scanner session.
-  ///
-  /// Uses native Google Play Services ML Kit Document Scanner on Android:
-  /// - Automatic document detection & quad corner cropping
-  /// - Real-time perspective correction & stain removal
-  /// - Built-in native filters (Color, Grayscale, Monochrome/B&W)
-  /// - Automatic & manual capture modes
-  /// - Multi-page scanning (up to 100 pages per session)
-  /// - PDF and JPEG output enabled simultaneously
   static Future<ScannedDocument?> startScan({
     required BuildContext context,
     String? customTitle,
     String? folderId,
   }) async {
-    // Check if running on Android
     final isAndroid = !kIsWeb && Platform.isAndroid;
 
     if (!isAndroid) {
@@ -57,11 +48,6 @@ class MlKitScannerService {
 
     DocumentScanner? documentScanner;
     try {
-      // Configure ML Kit options per specifications:
-      // - mode: full (detection, auto-capture, cropping, perspective correction, filters)
-      // - formats: both PDF and JPEG
-      // - pageLimit: 100 (Google ML Kit maximum allowed pages)
-      // - isGalleryImport: true (permits selecting photos from gallery directly in scanner UI)
       final options = DocumentScannerOptions(
         mode: ScannerMode.full,
         documentFormats: {DocumentFormat.pdf, DocumentFormat.jpeg},
@@ -76,12 +62,10 @@ class MlKitScannerService {
       final pdfUri = result.pdf?.uri;
       final images = result.images ?? [];
 
-      // Check for user cancellation or empty output
       if ((pdfUri == null || pdfUri.isEmpty) && images.isEmpty) {
         return null;
       }
 
-      // Prompt user to name / rename the PDF file BEFORE generating and saving it
       if (!context.mounted) return null;
 
       final defaultName = customTitle?.trim().isNotEmpty == true
@@ -90,29 +74,37 @@ class MlKitScannerService {
 
       final pageCount = result.pdf?.pageCount ?? (images.isNotEmpty ? images.length : 1);
 
-      final chosenName = await CustomDialogs.showPdfNamingDialog(
+      final saveConfig = await CustomDialogs.showPdfSaveConfigDialog(
         context: context,
         defaultName: defaultName,
         pageCount: pageCount,
       );
 
-      // User cancelled the naming prompt
-      if (chosenName == null) {
+      // User cancelled the save prompt
+      if (saveConfig == null) {
         return null;
       }
 
-      final docTitle = chosenName.trim().isNotEmpty
-          ? FileUtils.sanitizeFileName(chosenName.trim())
+      final docTitle = saveConfig.title.trim().isNotEmpty
+          ? FileUtils.sanitizeFileName(saveConfig.title.trim())
           : defaultName;
 
       final fileService = FileService();
       final storage = StorageService();
+      final docId = 'doc_${DateTime.now().millisecondsSinceEpoch}';
+
+      // Generate thumbnail from first scanned image BEFORE any PDF encryption
+      String? thumbPath;
+      if (images.isNotEmpty) {
+        try {
+          thumbPath = await ImageService().createThumbnail(images.first, docId);
+        } catch (_) {}
+      }
 
       // Resolve final local PDF path
       String finalPdfPath;
 
       if (pdfUri != null && pdfUri.isNotEmpty) {
-        // Normalize file URI if necessary
         String cleanPath = pdfUri;
         if (cleanPath.startsWith('file://')) {
           cleanPath = Uri.parse(cleanPath).toFilePath();
@@ -123,21 +115,43 @@ class MlKitScannerService {
           final managedPath = await fileService.createPdfPath(docTitle);
           final copied = await sourcePdfFile.copy(managedPath);
           finalPdfPath = copied.path;
+
+          // Generate thumbnail from unencrypted PDF if not already created from JPEG
+          if (thumbPath == null) {
+            try {
+              thumbPath = await PdfThumbnailService().createThumbnailFromPdf(
+                finalPdfPath,
+                docId,
+              );
+            } catch (_) {}
+          }
+
+          // Apply Watermark and/or Password encryption if selected
+          if ((saveConfig.watermarkText != null && saveConfig.watermarkText!.isNotEmpty) ||
+              (saveConfig.password != null && saveConfig.password!.isNotEmpty)) {
+            await PdfService().applySecurityOrWatermarkToPdf(
+              pdfPath: finalPdfPath,
+              watermarkText: saveConfig.watermarkText,
+              password: saveConfig.password,
+            );
+          }
         } else if (images.isNotEmpty) {
-          // Fallback: build PDF from images
           final generated = await PdfService().generatePdf(
             imagePaths: images,
             title: docTitle,
+            watermarkText: saveConfig.watermarkText,
+            password: saveConfig.password,
           );
           finalPdfPath = generated.path;
         } else {
           return null;
         }
       } else if (images.isNotEmpty) {
-        // ML Kit returned JPEG images only; assemble PDF with Scanora's PdfService
         final generated = await PdfService().generatePdf(
           imagePaths: images,
           title: docTitle,
+          watermarkText: saveConfig.watermarkText,
+          password: saveConfig.password,
         );
         finalPdfPath = generated.path;
       } else {
@@ -146,22 +160,16 @@ class MlKitScannerService {
 
       final pdfFile = File(finalPdfPath);
       final fileSize = await pdfFile.length();
-      final docId = 'doc_${DateTime.now().millisecondsSinceEpoch}';
 
-      // Generate thumbnail from first scanned page or rasterize from PDF
-      String? thumbPath;
-      if (images.isNotEmpty) {
-        try {
-          thumbPath = await ImageService().createThumbnail(images.first, docId);
-        } catch (_) {}
-      }
-      if (thumbPath == null && finalPdfPath.isNotEmpty) {
-        try {
-          thumbPath = await PdfThumbnailService().createThumbnailFromPdf(finalPdfPath, docId);
-        } catch (_) {}
+      // Check if target folder is a locked vault folder
+      bool isVaultDoc = false;
+      if (folderId != null) {
+        final folder = storage.folders.where((f) => f.id == folderId).firstOrNull;
+        if (folder != null && folder.isLocked) {
+          isVaultDoc = true;
+        }
       }
 
-      // Create ScannedDocument model for local storage
       final scannedDoc = ScannedDocument(
         id: docId,
         title: docTitle,
@@ -172,15 +180,25 @@ class MlKitScannerService {
         pageCount: pageCount,
         fileSizeBytes: fileSize,
         folderId: folderId,
+        isEncrypted: saveConfig.password != null && saveConfig.password!.isNotEmpty,
+        password: saveConfig.password,
+        watermarkText: saveConfig.watermarkText,
+        isVaultLocked: isVaultDoc,
       );
 
       // Persist document to local storage immediately
       await storage.addDocument(scannedDoc);
 
+      // Background sync to Google Drive if signed in and enabled
+      if (saveConfig.syncToDrive && GoogleDriveService().isSignedIn) {
+        GoogleDriveService().uploadDocument(scannedDoc);
+      }
+
       return scannedDoc;
     } on PlatformException catch (e) {
-      // User cancelled the ML Kit native flow
-      if (e.code == 'CANCELED' || e.code == 'RESULT_CANCELED' || e.message?.contains('cancel') == true) {
+      if (e.code == 'CANCELED' ||
+          e.code == 'RESULT_CANCELED' ||
+          e.message?.contains('cancel') == true) {
         return null;
       }
 
@@ -204,8 +222,6 @@ class MlKitScannerService {
     }
   }
 
-  /// Cross-platform fallback for Windows/macOS/Linux/Web where ML Kit Document Scanner
-  /// is not supported (ML Kit is Android only).
   static Future<ScannedDocument?> _runDesktopFallback({
     required BuildContext context,
     String? customTitle,

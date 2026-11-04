@@ -5,6 +5,8 @@ import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart
 import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import '../../../services/pdf_service.dart';
+import '../../../services/storage_service.dart';
 import '../models/extracted_document_text.dart';
 
 class DocumentTextExtractionService {
@@ -68,8 +70,29 @@ class DocumentTextExtractionService {
       }
     }
 
-    // Read PDF bytes
-    final pdfBytes = await pdfFile.readAsBytes();
+    // Read PDF bytes (prefer unencrypted sidecar if document is password-locked)
+    Uint8List pdfBytes;
+    final unlockedSidecar = File('$filePath.unlocked');
+    if (await unlockedSidecar.exists()) {
+      pdfBytes = await unlockedSidecar.readAsBytes();
+    } else {
+      final rawBytes = await pdfFile.readAsBytes();
+      final docMeta = StorageService().getDocument(documentId);
+      if (docMeta != null &&
+          docMeta.isEncrypted &&
+          docMeta.password != null &&
+          docMeta.password!.isNotEmpty) {
+        pdfBytes = PdfService().decryptPdfBytes(
+              rawBytes,
+              docMeta.password!,
+              expectedPassword: docMeta.password,
+            ) ??
+            rawBytes;
+      } else {
+        pdfBytes = rawBytes;
+      }
+    }
+
     final PdfDocument pdfDoc = PdfDocument(inputBytes: pdfBytes);
     final int totalPages = pdfDoc.pages.count;
 

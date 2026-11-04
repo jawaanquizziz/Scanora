@@ -10,6 +10,16 @@ class ScannedDocument {
   final bool isFavorite;
   final String? folderId;
 
+  // Security & Watermark metadata
+  final bool isEncrypted;
+  final String? password;
+  final String? watermarkText;
+  final bool isVaultLocked;
+
+  // Google Drive Cloud Sync metadata
+  final String? driveFileId;
+  final DateTime? syncedAt;
+
   ScannedDocument({
     required this.id,
     required this.title,
@@ -21,7 +31,18 @@ class ScannedDocument {
     this.fileSizeBytes = 0,
     this.isFavorite = false,
     this.folderId,
+    this.isEncrypted = false,
+    this.password,
+    this.watermarkText,
+    this.isVaultLocked = false,
+    this.driveFileId,
+    this.syncedAt,
   });
+
+  bool get isCloudSynced =>
+      driveFileId != null &&
+      driveFileId!.isNotEmpty &&
+      !driveFileId!.startsWith('cloud_backup_');
 
   ScannedDocument copyWith({
     String? id,
@@ -35,6 +56,15 @@ class ScannedDocument {
     bool? isFavorite,
     String? folderId,
     bool clearFolder = false,
+    bool? isEncrypted,
+    String? password,
+    bool clearPassword = false,
+    String? watermarkText,
+    bool clearWatermark = false,
+    bool? isVaultLocked,
+    String? driveFileId,
+    DateTime? syncedAt,
+    bool clearDriveSync = false,
   }) {
     return ScannedDocument(
       id: id ?? this.id,
@@ -47,6 +77,12 @@ class ScannedDocument {
       fileSizeBytes: fileSizeBytes ?? this.fileSizeBytes,
       isFavorite: isFavorite ?? this.isFavorite,
       folderId: clearFolder ? null : (folderId ?? this.folderId),
+      isEncrypted: clearPassword ? false : (isEncrypted ?? this.isEncrypted),
+      password: clearPassword ? null : (password ?? this.password),
+      watermarkText: clearWatermark ? null : (watermarkText ?? this.watermarkText),
+      isVaultLocked: isVaultLocked ?? this.isVaultLocked,
+      driveFileId: clearDriveSync ? null : (driveFileId ?? this.driveFileId),
+      syncedAt: clearDriveSync ? null : (syncedAt ?? this.syncedAt),
     );
   }
 
@@ -61,6 +97,12 @@ class ScannedDocument {
     'fileSizeBytes': fileSizeBytes,
     'isFavorite': isFavorite,
     'folderId': folderId,
+    'isEncrypted': isEncrypted,
+    'password': password,
+    'watermarkText': watermarkText,
+    'isVaultLocked': isVaultLocked,
+    'driveFileId': driveFileId,
+    'syncedAt': syncedAt?.toIso8601String(),
   };
 
   factory ScannedDocument.fromJson(Map<String, dynamic> json) => ScannedDocument(
@@ -74,5 +116,11 @@ class ScannedDocument {
     fileSizeBytes: json['fileSizeBytes'] as int? ?? 0,
     isFavorite: json['isFavorite'] as bool? ?? false,
     folderId: json['folderId'] as String?,
+    isEncrypted: json['isEncrypted'] as bool? ?? false,
+    password: json['password'] as String?,
+    watermarkText: json['watermarkText'] as String?,
+    isVaultLocked: json['isVaultLocked'] as bool? ?? false,
+    driveFileId: json['driveFileId'] as String?,
+    syncedAt: json['syncedAt'] != null ? DateTime.tryParse(json['syncedAt'] as String) : null,
   );
 }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../models/scanned_document.dart';
@@ -66,6 +67,11 @@ class _DocumentThumbnailViewState extends State<DocumentThumbnailView> {
       return;
     }
 
+    // Do not attempt raw PDF rasterization if encrypted without thumbnail
+    if (widget.doc.isEncrypted) {
+      return;
+    }
+
     // Otherwise lazily fetch or render from PDF file
     _isLoading = true;
     PdfThumbnailService().getOrRenderBytes(widget.doc).then((bytes) {
@@ -92,6 +98,7 @@ class _DocumentThumbnailViewState extends State<DocumentThumbnailView> {
   Widget build(BuildContext context) {
     final effectiveRadius = widget.borderRadius ?? BorderRadius.circular(8);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isProtected = widget.doc.isEncrypted || widget.doc.isVaultLocked;
 
     Widget imageContent;
 
@@ -138,38 +145,117 @@ class _DocumentThumbnailViewState extends State<DocumentThumbnailView> {
           children: [
             imageContent,
 
-            // PDF Badge overlay on top corner or bottom corner
-            if (widget.showBadge)
-              Positioned(
-                bottom: 4,
-                left: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: AppColors.pdfRed.withAlpha(230),
-                    borderRadius: BorderRadius.circular(3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(50),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
+            // Diagonal watermark preview ribbon if document is watermarked & not blurred
+            if (widget.doc.watermarkText != null &&
+                widget.doc.watermarkText!.isNotEmpty &&
+                !isProtected)
+              Center(
+                child: Transform.rotate(
+                  angle: -0.55,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.red.withAlpha(95),
+                        width: 1,
                       ),
-                    ],
-                  ),
-                  child: const Text(
-                    'PDF',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.4,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Text(
+                      widget.doc.watermarkText!.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.red.withAlpha(115),
+                        fontSize: 7,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
                     ),
                   ),
                 ),
               ),
 
+            // Privacy shield blur overlay for password-encrypted or vault-locked documents
+            if (isProtected)
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 7, sigmaY: 7),
+                  child: Container(
+                    color: (isDark ? const Color(0xFF0F172A) : const Color(0xFF1E293B))
+                        .withAlpha(165),
+                    alignment: Alignment.center,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(30),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withAlpha(60)),
+                      ),
+                      child: Icon(
+                        widget.doc.isVaultLocked
+                            ? Icons.fingerprint_rounded
+                            : Icons.lock_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // PDF Badge overlay on bottom-left corner
+            if (widget.showBadge)
+              Positioned(
+                bottom: 4,
+                left: 4,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: AppColors.pdfRed.withAlpha(230),
+                        borderRadius: BorderRadius.circular(3),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(50),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: const Text(
+                        'PDF',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ),
+                    if (widget.doc.isEncrypted) ...[
+                      const SizedBox(width: 3),
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue.withAlpha(235),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: const Icon(
+                          Icons.lock_rounded,
+                          color: Colors.white,
+                          size: 8,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
             // Loading spinner indicator if rasterizing
-            if (_isLoading && _cachedBytes == null)
+            if (_isLoading && _cachedBytes == null && !isProtected)
               Positioned.fill(
                 child: Container(
                   color: Colors.black.withAlpha(15),

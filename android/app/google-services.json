@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1054850397639",
+    "project_id": "scanora-j27",
+    "storage_bucket": "scanora-j27.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1054850397639:android:1a7dd1d06083544dc855e2",
+        "android_client_info": {
+          "package_name": "com.scanora.app.scanora"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1054850397639-do0ucbrfjd8svr0t851uvos640qjvdq6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.scanora.app.scanora",
+            "certificate_hash": "9b9efa8dc4bb26030cd640cb72f7621d0995001e"
+          }
+        },
+        {
+          "client_id": "1054850397639-reebbg8g0n33avcuqdq6vru1ooqf443e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_uwlsO-2A5Zrti9H8oObOndHmRHZnpVY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1054850397639-reebbg8g0n33avcuqdq6vru1ooqf443e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

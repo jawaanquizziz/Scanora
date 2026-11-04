@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
@@ -8,6 +9,8 @@ import '../../core/widgets/document_thumbnail_view.dart';
 import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/scanora_logo.dart';
 import '../../models/scanned_document.dart';
+import '../../services/google_drive_service.dart';
+import '../../services/pdf_service.dart';
 import '../../services/storage_service.dart';
 import '../chat/screens/document_chat_screen.dart';
 import '../documents/pdf_viewer_screen.dart';
@@ -18,17 +21,18 @@ import '../scanner/page_review_screen.dart';
 class HomeScreen extends StatelessWidget {
   final VoidCallback onNavigateToDocuments;
   final VoidCallback? onNavigateToFolders;
+  final VoidCallback? onNavigateToSettings;
 
   const HomeScreen({
     super.key,
     required this.onNavigateToDocuments,
     this.onNavigateToFolders,
+    this.onNavigateToSettings,
   });
 
   Future<void> _startCameraScan(BuildContext context) async {
     final doc = await MlKitScannerService.startScan(context: context);
     if (doc != null && context.mounted) {
-      // Immediately display in Scanora's unified Scans screen
       onNavigateToDocuments();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -107,14 +111,100 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _protectDocument(BuildContext context, ScannedDocument doc) async {
+    final config = await CustomDialogs.showProtectDocumentSheet(
+      context: context,
+      document: doc,
+    );
+    if (config == null || !context.mounted) return;
+
+    final bool enablePassword = config['enablePassword'] as bool? ?? false;
+    final String? newPassword = config['password'] as String?;
+    final bool newVaultLock = config['isVaultLocked'] as bool? ?? false;
+    final String? newWatermark = config['watermarkText'] as String?;
+
+    try {
+      await PdfService().applySecurityOrWatermarkToPdf(
+        pdfPath: doc.filePath,
+        watermarkText: newWatermark,
+        password: enablePassword ? newPassword : null,
+        currentPassword: doc.password,
+      );
+
+      final updatedFile = File(doc.filePath);
+      final newSize = await updatedFile.length();
+
+      final updatedDoc = doc.copyWith(
+        isEncrypted: enablePassword && newPassword != null && newPassword.isNotEmpty,
+        password: enablePassword ? newPassword : null,
+        clearPassword: !enablePassword,
+        isVaultLocked: newVaultLock,
+        watermarkText: newWatermark ?? doc.watermarkText,
+        fileSizeBytes: newSize,
+        modifiedAt: DateTime.now(),
+      );
+
+      await StorageService().updateDocument(updatedDoc);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Document security & watermark updated!')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update security: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _syncDocToDrive(BuildContext context, ScannedDocument doc) async {
+    final drive = GoogleDriveService();
+    if (!drive.isSignedIn) {
+      final signedIn = await drive.signIn();
+      if (!signedIn) {
+        if (context.mounted && drive.lastError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(drive.lastError!)),
+          );
+        }
+        return;
+      }
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Uploading "${doc.title}.pdf" to Google Drive...'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+
+    final driveId = await drive.uploadDocument(doc);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            driveId != null
+                ? 'Saved "${doc.title}.pdf" to Google Drive!'
+                : (drive.lastError ?? 'Failed to upload to Google Drive'),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListenableBuilder(
-      listenable: StorageService(),
+      listenable: Listenable.merge([StorageService(), GoogleDriveService()]),
       builder: (context, _) {
         final storage = StorageService();
+        final drive = GoogleDriveService();
         final allDocs = storage.documents;
 
         return Scaffold(
@@ -126,6 +216,27 @@ class HomeScreen extends StatelessWidget {
               fontSize: 21,
               fontWeight: FontWeight.w700,
             ),
+            actions: [
+              IconButton(
+                tooltip: drive.isSignedIn
+                    ? 'Google Drive Connected (${drive.userEmail})'
+                    : 'Connect Google Drive & Settings',
+                icon: Icon(
+                  drive.isSignedIn ? Icons.cloud_done_rounded : Icons.cloud_queue_rounded,
+                  color: drive.isSignedIn ? AppColors.cloudBlue : null,
+                ),
+                onPressed: () {
+                  onNavigateToSettings?.call();
+                },
+              ),
+              IconButton(
+                tooltip: 'Settings & Security',
+                icon: const Icon(Icons.settings_outlined),
+                onPressed: () {
+                  onNavigateToSettings?.call();
+                },
+              ),
+            ],
           ),
           body: RefreshIndicator(
             onRefresh: () async {
@@ -166,7 +277,12 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
+
+                // Google Drive Cloud Backup Pill Banner
+                _buildCloudStatusBanner(context, drive, allDocs, isDark),
+
+                const SizedBox(height: 20),
 
                 // Recent Scans Section Header
                 Row(
@@ -210,6 +326,81 @@ class HomeScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCloudStatusBanner(
+    BuildContext context,
+    GoogleDriveService drive,
+    List<ScannedDocument> allDocs,
+    bool isDark,
+  ) {
+    final syncedCount = allDocs.where((d) => d.isCloudSynced).length;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        onNavigateToSettings?.call();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1A2232) : const Color(0xFFF0F7FF),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: AppColors.primaryBlue.withAlpha(isDark ? 70 : 50),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withAlpha(30),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                drive.isSignedIn ? Icons.cloud_done_rounded : Icons.add_to_drive_rounded,
+                size: 18,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    drive.isSignedIn
+                        ? 'Google Drive Backup Active'
+                        : 'Google Drive Cloud Backup',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    drive.isSignedIn
+                        ? '${drive.userEmail} • $syncedCount/${allDocs.length} synced'
+                        : 'Tap to sign in with Google & auto-save scans to Drive',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              size: 20,
+              color: AppColors.primaryBlue,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -289,6 +480,9 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildRecentDocItem(BuildContext context, ScannedDocument doc, bool isDark) {
+    final drive = GoogleDriveService();
+    final isSyncing = drive.isDocSyncing(doc.id);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Card(
@@ -305,21 +499,66 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        doc.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                      Row(
+                        children: [
+                          if (doc.isEncrypted || doc.isVaultLocked) ...[
+                            const Icon(Icons.lock_rounded, size: 14, color: AppColors.primaryBlue),
+                            const SizedBox(width: 4),
+                          ],
+                          Expanded(
+                            child: Text(
+                              doc.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${DateFormatter.formatDisplay(doc.createdAt)} • ${doc.pageCount} ${doc.pageCount == 1 ? 'page' : 'pages'}',
                         style: const TextStyle(fontSize: 12, color: AppColors.secondaryText),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        FileUtils.formatFileSize(doc.fileSizeBytes),
-                        style: const TextStyle(fontSize: 11, color: AppColors.secondaryText),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          Text(
+                            FileUtils.formatFileSize(doc.fileSizeBytes),
+                            style: const TextStyle(fontSize: 11, color: AppColors.secondaryText),
+                          ),
+                          if (doc.watermarkText != null && doc.watermarkText!.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withAlpha(22),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                doc.watermarkText!,
+                                style: const TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(width: 8),
+                          if (isSyncing)
+                            const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(strokeWidth: 1.5),
+                            )
+                          else if (doc.isCloudSynced)
+                            const Icon(
+                              Icons.cloud_done_rounded,
+                              size: 14,
+                              color: AppColors.cloudBlue,
+                            ),
+                        ],
                       ),
                     ],
                   ),
@@ -341,6 +580,10 @@ class HomeScreen extends StatelessWidget {
                           builder: (_) => DocumentChatScreen(document: doc),
                         ),
                       );
+                    } else if (val == 'security') {
+                      _protectDocument(context, doc);
+                    } else if (val == 'drive') {
+                      _syncDocToDrive(context, doc);
                     } else if (val == 'open') {
                       _openDocument(context, doc);
                     } else if (val == 'share') {
@@ -368,6 +611,37 @@ class HomeScreen extends StatelessWidget {
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    const PopupMenuItem(
+                      value: 'security',
+                      child: Row(
+                        children: [
+                          Icon(Icons.security_rounded, size: 20, color: AppColors.primaryBlue),
+                          SizedBox(width: 12),
+                          Text('Lock PDF / Watermark'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'drive',
+                      child: Row(
+                        children: [
+                          Icon(
+                            doc.isCloudSynced
+                                ? Icons.cloud_done_rounded
+                                : Icons.add_to_drive_rounded,
+                            size: 20,
+                            color: AppColors.cloudBlue,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            doc.isCloudSynced
+                                ? 'Update on Google Drive'
+                                : 'Save to Google Drive',
                           ),
                         ],
                       ),

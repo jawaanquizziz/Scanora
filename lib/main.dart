@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
 import 'services/file_service.dart';
+import 'services/google_drive_service.dart';
 import 'services/storage_service.dart';
 
 void main() async {
@@ -18,6 +19,7 @@ void main() async {
   // Initialize Core Services
   await FileService().init();
   await StorageService().init();
+  await GoogleDriveService().init();
 
   runApp(const ScanoraApp());
 }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
@@ -10,6 +11,8 @@ import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/pdf_document_icon.dart';
 import '../../core/widgets/scanora_logo.dart';
 import '../../models/scanned_document.dart';
+import '../../services/google_drive_service.dart';
+import '../../services/pdf_service.dart';
 import '../../services/storage_service.dart';
 import '../chat/screens/document_chat_screen.dart';
 import 'pdf_viewer_screen.dart';
@@ -51,20 +54,17 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   List<ScannedDocument> _filterAndSort(List<ScannedDocument> docs) {
     var result = List<ScannedDocument>.from(docs);
 
-    // 1. Filter by category/folder
     if (_activeFilter == 'favorites') {
       result = result.where((d) => d.isFavorite).toList();
     } else if (_activeFilter != 'all') {
       result = result.where((d) => d.folderId == _activeFilter).toList();
     }
 
-    // 2. Filter by search query
     final query = _searchController.text.trim().toLowerCase();
     if (query.isNotEmpty) {
       result = result.where((d) => d.title.toLowerCase().contains(query)).toList();
     }
 
-    // 3. Sort
     switch (_currentSort) {
       case DocumentSort.newest:
         result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -96,6 +96,91 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         _openDocument(doc);
       },
     );
+  }
+
+  Future<void> _protectDocument(ScannedDocument doc) async {
+    final config = await CustomDialogs.showProtectDocumentSheet(
+      context: context,
+      document: doc,
+    );
+    if (config == null || !mounted) return;
+
+    final bool enablePassword = config['enablePassword'] as bool? ?? false;
+    final String? newPassword = config['password'] as String?;
+    final bool newVaultLock = config['isVaultLocked'] as bool? ?? false;
+    final String? newWatermark = config['watermarkText'] as String?;
+
+    try {
+      await PdfService().applySecurityOrWatermarkToPdf(
+        pdfPath: doc.filePath,
+        watermarkText: newWatermark,
+        password: enablePassword ? newPassword : null,
+        currentPassword: doc.password,
+      );
+
+      final updatedFile = File(doc.filePath);
+      final newSize = await updatedFile.length();
+
+      final updatedDoc = doc.copyWith(
+        isEncrypted: enablePassword && newPassword != null && newPassword.isNotEmpty,
+        password: enablePassword ? newPassword : null,
+        clearPassword: !enablePassword,
+        isVaultLocked: newVaultLock,
+        watermarkText: newWatermark ?? doc.watermarkText,
+        fileSizeBytes: newSize,
+        modifiedAt: DateTime.now(),
+      );
+
+      await StorageService().updateDocument(updatedDoc);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Document security & watermark updated!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update security: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _syncDocToDrive(ScannedDocument doc) async {
+    final drive = GoogleDriveService();
+    if (!drive.isSignedIn) {
+      final signedIn = await drive.signIn();
+      if (!signedIn) {
+        if (mounted && drive.lastError != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(drive.lastError!)),
+          );
+        }
+        return;
+      }
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Uploading "${doc.title}.pdf" to Google Drive...'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+
+    final driveId = await drive.uploadDocument(doc);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            driveId != null
+                ? 'Saved "${doc.title}.pdf" to Google Drive!'
+                : (drive.lastError ?? 'Failed to upload to Google Drive'),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _renameDocument(ScannedDocument doc) async {
@@ -152,7 +237,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListenableBuilder(
-      listenable: StorageService(),
+      listenable: Listenable.merge([StorageService(), GoogleDriveService()]),
       builder: (context, _) {
         final storage = StorageService();
         final filteredDocs = _filterAndSort(storage.documents);
@@ -161,12 +246,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           appBar: AppBar(
             elevation: 0,
             scrolledUnderElevation: 1,
-            title: Row(
+            title: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const ScanoraLogo(size: 24, hasShadow: false),
-                const SizedBox(width: 8),
-                const Text('My Scans', style: TextStyle(fontWeight: FontWeight.w700)),
+                ScanoraLogo(size: 24, hasShadow: false),
+                SizedBox(width: 8),
+                Text('My Scans', style: TextStyle(fontWeight: FontWeight.w700)),
               ],
             ),
             centerTitle: true,
@@ -252,7 +337,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         child: _buildFilterChip(
                           folder.id,
                           '${folder.name} ($count)',
-                          icon: Icons.folder,
+                          icon: folder.isLocked ? Icons.folder_special_rounded : Icons.folder,
                           iconColor: Color(folder.colorValue),
                         ),
                       );
@@ -342,6 +427,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Widget _buildDocumentListCard(ScannedDocument doc, bool isDark) {
+    final drive = GoogleDriveService();
+    final isSyncing = drive.isDocSyncing(doc.id);
+
     return Card(
       child: InkWell(
         onTap: () => _openDocument(doc),
@@ -350,7 +438,6 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // Thumbnail
               _buildThumbnail(
                 doc,
                 width: 56,
@@ -358,20 +445,28 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               const SizedBox(width: 14),
-
-              // Info
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      doc.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        if (doc.isEncrypted || doc.isVaultLocked) ...[
+                          const Icon(Icons.lock_rounded, size: 14, color: AppColors.primaryBlue),
+                          const SizedBox(width: 4),
+                        ],
+                        Expanded(
+                          child: Text(
+                            doc.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -382,18 +477,51 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      FileUtils.formatFileSize(doc.fileSizeBytes),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.secondaryText,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          FileUtils.formatFileSize(doc.fileSizeBytes),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                        if (doc.watermarkText != null && doc.watermarkText!.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withAlpha(22),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              doc.watermarkText!,
+                              style: const TextStyle(
+                                fontSize: 9,
+                                color: Colors.red,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 8),
+                        if (isSyncing)
+                          const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(strokeWidth: 1.5),
+                          )
+                        else if (doc.isCloudSynced)
+                          const Icon(
+                            Icons.cloud_done_rounded,
+                            size: 14,
+                            color: AppColors.cloudBlue,
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
-
-              // Favorite Star & Menu
               IconButton(
                 icon: Icon(
                   doc.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
@@ -411,6 +539,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Widget _buildDocumentGridCard(ScannedDocument doc, bool isDark) {
+    final drive = GoogleDriveService();
+    final isSyncing = drive.isDocSyncing(doc.id);
+
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 0,
@@ -422,11 +553,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         ),
       ),
       child: InkWell(
-        onTap: () => _openDocumentWithDownload(doc),
+        onTap: () => _openDocument(doc),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Thumbnail area
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
@@ -437,21 +567,39 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     height: double.infinity,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
                   ),
-                  // Cloud status icon in top-right corner matching Image 2
-                  const Positioned(
+                  Positioned(
                     top: 6,
                     right: 6,
-                    child: Icon(
-                      Icons.cloud_done_rounded,
-                      color: AppColors.cloudBlue,
-                      size: 20,
+                    child: InkWell(
+                      onTap: () => _syncDocToDrive(doc),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: (isDark ? Colors.black : Colors.white).withAlpha(190),
+                          shape: BoxShape.circle,
+                        ),
+                        child: isSyncing
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 1.8),
+                              )
+                            : Icon(
+                                doc.isCloudSynced
+                                    ? Icons.cloud_done_rounded
+                                    : Icons.cloud_upload_outlined,
+                                color: doc.isCloudSynced
+                                    ? AppColors.cloudBlue
+                                    : AppColors.secondaryText,
+                                size: 16,
+                              ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Bottom title & info
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
@@ -505,6 +653,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           case 'ask_ai':
             _openChatWithDocument(doc);
             break;
+          case 'security':
+            _protectDocument(doc);
+            break;
+          case 'drive':
+            _syncDocToDrive(doc);
+            break;
           case 'download':
             _openDocumentWithDownload(doc);
             break;
@@ -541,6 +695,31 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem(
+          value: 'security',
+          child: Row(
+            children: [
+              Icon(Icons.security_rounded, size: 20, color: AppColors.primaryBlue),
+              SizedBox(width: 12),
+              Text('Lock PDF / Watermark'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'drive',
+          child: Row(
+            children: [
+              Icon(
+                doc.isCloudSynced ? Icons.cloud_done_rounded : Icons.add_to_drive_rounded,
+                size: 20,
+                color: AppColors.cloudBlue,
+              ),
+              const SizedBox(width: 12),
+              Text(doc.isCloudSynced ? 'Update on Google Drive' : 'Save to Google Drive'),
             ],
           ),
         ),
