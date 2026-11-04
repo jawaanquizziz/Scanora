@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="230" viewBox="0 0 1200 230" font-family="'Segoe UI', 'Inter', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0B0F17"/>
+      <stop offset="100%" stop-color="#1A1F2B"/>
+    </linearGradient>
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EF4444"/>
+    </linearGradient>
+    <style>
+      .node { animation: pop 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+      .n1 { animation-delay: 0s; } .n2 { animation-delay: .8s; } .n3 { animation-delay: 1.6s; }
+      .n4 { animation-delay: 2.4s; } .n5 { animation-delay: 3.2s; }
+      @keyframes pop { 0%,70%,100% { transform: scale(1); } 10% { transform: scale(1.12); } }
+      .dash { stroke-dasharray: 8 10; animation: dash 1.2s linear infinite; }
+      @keyframes dash { to { stroke-dashoffset: -36; } }
+    </style>
+  </defs>
+  <rect width="1200" height="230" rx="20" fill="url(#bg)"/>
+
+  <path d="M170 100H1030" stroke="url(#flow)" stroke-width="4" fill="none" class="dash"/>
+  <circle r="7" fill="#FDBA74">
+    <animateMotion dur="4s" repeatCount="indefinite" path="M170 100H1030"/>
+  </circle>
+
+  <g font-size="15" font-weight="700" fill="#F3F4F6" text-anchor="middle">
+    <g class="node n1">
+      <circle cx="170" cy="100" r="46" fill="#1F2937" stroke="#F97316" stroke-width="3"/>
+      <text x="170" y="110" font-size="30">📷</text>
+    </g>
+    <text x="170" y="178">Capture</text>
+    <text x="170" y="200" font-size="12" font-weight="400" fill="#9CA3AF">ML Kit edge detect</text>
+
+    <g class="node n2">
+      <circle cx="385" cy="100" r="46" fill="#1F2937" stroke="#F97316" stroke-width="3"/>
+      <text x="385" y="110" font-size="30">✨</text>
+    </g>
+    <text x="385" y="178">Enhance</text>
+    <text x="385" y="200" font-size="12" font-weight="400" fill="#9CA3AF">Crop · Rotate · Filters</text>
+
+    <g class="node n3">
+      <circle cx="600" cy="100" r="46" fill="#1F2937" stroke="#22C55E" stroke-width="3"/>
+      <text x="600" y="110" font-size="30">🔐</text>
+    </g>
+    <text x="600" y="178">Secure</text>
+    <text x="600" y="200" font-size="12" font-weight="400" fill="#9CA3AF">AES-128 · Watermark · Vault</text>
+
+    <g class="node n4">
+      <circle cx="815" cy="100" r="46" fill="#1F2937" stroke="#A855F7" stroke-width="3"/>
+      <text x="815" y="110" font-size="30">🧠</text>
+    </g>
+    <text x="815" y="178">Understand</text>
+    <text x="815" y="200" font-size="12" font-weight="400" fill="#9CA3AF">OCR · On-device LLM chat</text>
+
+    <g class="node n5">
+      <circle cx="1030" cy="100" r="46" fill="#1F2937" stroke="#3B82F6" stroke-width="3"/>
+      <text x="1030" y="110" font-size="30">☁️</text>
+    </g>
+    <text x="1030" y="178">Backup</text>
+    <text x="1030" y="200" font-size="12" font-weight="400" fill="#9CA3AF">Your own Google Drive</text>
+  </g>
+</svg>
+
