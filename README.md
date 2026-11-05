@@ -15,7 +15,8 @@
 [![Android](https://img.shields.io/badge/Android-5.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-installation)
 [![On-Device AI](https://img.shields.io/badge/On--Device%20LLM-SmolLM2%20GGUF-F97316?style=for-the-badge)](#-on-device-ai-document-assistant)
 [![Google Drive](https://img.shields.io/badge/Google%20Drive-Cloud%20Sync-1A73E8?style=for-the-badge&logo=googledrive&logoColor=white)](#%EF%B8%8F-google-drive-cloud-backup)
-[![APK Size](https://img.shields.io/badge/Release%20APK-20.0%20MB-16A34A?style=for-the-badge)](#-installation)
+[![APK Size](https://img.shields.io/badge/Release%20APK-20.1%20MB-16A34A?style=for-the-badge)](#-installation)
+[![License: MIT](https://img.shields.io/badge/License-MIT-EAB308?style=for-the-badge)](LICENSE)
 
 **[Overview](#-overview) • [Key Features](#-key-features) • [App Screens](#-app-screens) • [Google Drive Sync](#%EF%B8%8F-google-drive-cloud-backup) • [Architecture](#%EF%B8%8F-architecture) • [Tech Stack](#-tech-stack) • [Installation](#-installation)**
 
@@ -259,6 +260,12 @@ flutter build apk --release --split-per-abi
 - [ ] **Multi-Document Folder RAG:** Query across an entire folder of invoices or medical reports simultaneously.
 - [ ] **Smart Expense & Table Export:** Extract receipt tables into Excel/CSV spreadsheets automatically.
 - [ ] **Cross-Platform Desktop & iOS Sync:** Expand builds to iOS, Windows, and macOS synced via Google Drive.
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for full details.
 
 ---
 
