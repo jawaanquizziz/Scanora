@@ -16,30 +16,69 @@ class StorageService extends ChangeNotifier {
   static const String _kDocumentsKey = 'scanora_documents_v1';
   static const String _kFoldersKey = 'scanora_folders_v1';
   static const String _kSettingsKey = 'scanora_settings_v1';
+  static const String _kActiveAccountKey = 'scanora_active_account_v1';
 
   List<ScannedDocument> _documents = [];
   List<DocumentFolder> _folders = [];
   AppSettings _settings = const AppSettings();
+  String? _activeAccountEmail;
   bool _isInitialized = false;
 
-  List<ScannedDocument> get documents => List.unmodifiable(_documents);
+  String? get activeAccountEmail => _activeAccountEmail;
+
+  List<ScannedDocument> get _visibleDocuments {
+    if (_activeAccountEmail != null && _activeAccountEmail!.isNotEmpty) {
+      return _documents.where((d) {
+        final owner = d.ownerEmail?.trim().toLowerCase();
+        if (owner != null && owner.isNotEmpty) {
+          return owner == _activeAccountEmail;
+        }
+        // Only show untagged local documents that haven't been synced to another account
+        return !d.isCloudSynced;
+      }).toList();
+    }
+    // When signed out, hide documents owned by or synced to a specific Google account
+    return _documents.where((d) {
+      final owner = d.ownerEmail?.trim().toLowerCase();
+      return (owner == null || owner.isEmpty) && !d.isCloudSynced;
+    }).toList();
+  }
+
+  List<ScannedDocument> get documents => List.unmodifiable(_visibleDocuments);
   List<DocumentFolder> get folders => List.unmodifiable(_folders);
   AppSettings get settings => _settings;
   bool get isInitialized => _isInitialized;
 
   List<ScannedDocument> get recentDocuments {
-    final sorted = List<ScannedDocument>.from(_documents)
+    final sorted = List<ScannedDocument>.from(_visibleDocuments)
       ..sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
     return sorted.take(6).toList();
   }
 
   List<ScannedDocument> get favoriteDocuments {
-    return _documents.where((d) => d.isFavorite).toList()
+    return _visibleDocuments.where((d) => d.isFavorite).toList()
       ..sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
+  }
+
+  Future<void> setActiveAccount(String? email) async {
+    final normalized = email?.trim().toLowerCase();
+    final nextVal = (normalized != null && normalized.isNotEmpty) ? normalized : null;
+    if (_activeAccountEmail == nextVal) return;
+    _activeAccountEmail = nextVal;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_activeAccountEmail != null) {
+        await prefs.setString(_kActiveAccountKey, _activeAccountEmail!);
+      } else {
+        await prefs.remove(_kActiveAccountKey);
+      }
+    } catch (_) {}
+    notifyListeners();
   }
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
+    _activeAccountEmail = prefs.getString(_kActiveAccountKey);
 
     // Load Settings
     final settingsRaw = prefs.getString(_kSettingsKey);
@@ -73,14 +112,104 @@ class StorageService extends ChangeNotifier {
       }
     }
 
+    await _recoverFromLocalDiskIfNeeded();
+
     _isInitialized = true;
     notifyListeners();
+  }
+
+  Future<void> _writeLocalManifestBackup() async {
+    try {
+      final dPath = await FileService().documentsPath;
+      final manifestFile = File('$dPath/scanora_library_backup.json');
+      final payload = {
+        'updatedAt': DateTime.now().toIso8601String(),
+        'folders': _folders.map((f) => f.toJson()).toList(),
+        'documents': _documents.map((d) => d.toJson()).toList(),
+      };
+      await manifestFile.writeAsString(jsonEncode(payload), flush: true);
+    } catch (_) {}
+  }
+
+  Future<void> _recoverFromLocalDiskIfNeeded() async {
+    try {
+      final dPath = await FileService().documentsPath;
+      final dir = Directory(dPath);
+      if (!await dir.exists()) return;
+
+      // 1. If SharedPreferences had no documents/folders, check local manifest backup
+      final manifestFile = File('$dPath/scanora_library_backup.json');
+      if (_documents.isEmpty && await manifestFile.exists()) {
+        try {
+          final map = jsonDecode(await manifestFile.readAsString()) as Map<String, dynamic>;
+          if (_folders.isEmpty && map['folders'] is List) {
+            _folders = (map['folders'] as List)
+                .map((e) => DocumentFolder.fromJson(e as Map<String, dynamic>))
+                .toList();
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+              _kFoldersKey,
+              jsonEncode(_folders.map((f) => f.toJson()).toList()),
+            );
+          }
+          if (map['documents'] is List) {
+            final recoveredDocs = (map['documents'] as List)
+                .map((e) => ScannedDocument.fromJson(e as Map<String, dynamic>))
+                .where((d) => File(d.filePath).existsSync())
+                .toList();
+            if (recoveredDocs.isNotEmpty) {
+              _documents = recoveredDocs;
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString(
+                _kDocumentsKey,
+                jsonEncode(_documents.map((d) => d.toJson()).toList()),
+              );
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 2. Discover any orphaned .pdf files in scanora_documents not yet tracked
+      final existingPaths = _documents.map((d) => d.filePath).toSet();
+      bool addedOrphan = false;
+      for (final entity in dir.listSync()) {
+        if (entity is File &&
+            entity.path.toLowerCase().endsWith('.pdf') &&
+            !existingPaths.contains(entity.path)) {
+          final stat = await entity.stat();
+          final fileName = entity.uri.pathSegments.last;
+          final title = fileName.replaceAll(RegExp(r'\.pdf$', caseSensitive: false), '');
+          final docId = 'doc_${stat.modified.millisecondsSinceEpoch}_${title.hashCode.abs()}';
+          _documents.add(
+            ScannedDocument(
+              id: docId,
+              title: title,
+              filePath: entity.path,
+              createdAt: stat.changed,
+              modifiedAt: stat.modified,
+              pageCount: 1,
+              fileSizeBytes: stat.size,
+            ),
+          );
+          addedOrphan = true;
+        }
+      }
+      if (addedOrphan) {
+        _documents.sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          _kDocumentsKey,
+          jsonEncode(_documents.map((d) => d.toJson()).toList()),
+        );
+      }
+    } catch (_) {}
   }
 
   Future<void> _saveDocuments() async {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(_documents.map((d) => d.toJson()).toList());
     await prefs.setString(_kDocumentsKey, encoded);
+    await _writeLocalManifestBackup();
     notifyListeners();
   }
 
@@ -88,6 +217,7 @@ class StorageService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(_folders.map((f) => f.toJson()).toList());
     await prefs.setString(_kFoldersKey, encoded);
+    await _writeLocalManifestBackup();
     notifyListeners();
   }
 
@@ -107,8 +237,60 @@ class StorageService extends ChangeNotifier {
     }
   }
 
+  ScannedDocument? findExistingDocForDriveRestore({
+    required String driveFileId,
+    required String cleanTitle,
+    required String accountEmail,
+  }) {
+    final normalizedEmail = accountEmail.trim().toLowerCase();
+    for (final d in _documents) {
+      final dOwner = d.ownerEmail?.trim().toLowerCase();
+      // Match by exact Google Drive File ID (if owned by this account or legacy untagged)
+      if (d.driveFileId == driveFileId &&
+          (dOwner == null || dOwner.isEmpty || dOwner == normalizedEmail)) {
+        return d;
+      }
+      // Or match by title if already owned by this same account
+      if (dOwner == normalizedEmail &&
+          d.title.trim().toLowerCase() == cleanTitle.trim().toLowerCase()) {
+        return d;
+      }
+    }
+    return null;
+  }
+
   Future<void> addDocument(ScannedDocument doc) async {
-    _documents.insert(0, doc);
+    final taggedDoc = (_activeAccountEmail != null &&
+            _activeAccountEmail!.isNotEmpty &&
+            (doc.ownerEmail == null || doc.ownerEmail!.isEmpty))
+        ? doc.copyWith(ownerEmail: _activeAccountEmail)
+        : doc;
+    _documents.insert(0, taggedDoc);
+    await _saveDocuments();
+  }
+
+  Future<void> mergeRestoredFolder(DocumentFolder folder) async {
+    final existingIdx = _folders.indexWhere(
+      (f) => f.id == folder.id || f.name.toLowerCase() == folder.name.toLowerCase(),
+    );
+    if (existingIdx == -1) {
+      _folders.add(folder);
+      await _saveFolders();
+    }
+  }
+
+  Future<void> mergeRestoredDocument(ScannedDocument restoredDoc) async {
+    final existingIdx = _documents.indexWhere(
+      (d) =>
+          d.id == restoredDoc.id ||
+          (restoredDoc.driveFileId != null && d.driveFileId == restoredDoc.driveFileId),
+    );
+    if (existingIdx != -1) {
+      _documents[existingIdx] = restoredDoc;
+    } else {
+      _documents.add(restoredDoc);
+    }
+    _documents.sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
     await _saveDocuments();
   }
 
@@ -205,13 +387,13 @@ class StorageService extends ChangeNotifier {
 
   List<ScannedDocument> getDocumentsInFolder(String? folderId) {
     if (folderId == null) {
-      return _documents.where((d) => d.folderId == null).toList();
+      return _visibleDocuments.where((d) => d.folderId == null).toList();
     }
-    return _documents.where((d) => d.folderId == folderId).toList();
+    return _visibleDocuments.where((d) => d.folderId == folderId).toList();
   }
 
   int getDocumentCountInFolder(String folderId) {
-    return _documents.where((d) => d.folderId == folderId).length;
+    return _visibleDocuments.where((d) => d.folderId == folderId).length;
   }
 
   // Folder Operations

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="640" viewBox="0 0 320 640" font-family="'Segoe UI', 'Inter', Arial, sans-serif">
+  <rect x="4" y="4" width="312" height="632" rx="38" fill="#0B0E14" stroke="#2D3748" stroke-width="4"/>
+  <rect x="12" y="12" width="296" height="616" rx="32" fill="#0F131A"/>
+  <circle cx="160" cy="26" r="5" fill="#05070A"/>
+  <text x="32" y="30" font-size="10" font-weight="600" fill="#E2E8F0">12:33</text>
+  <text x="246" y="30" font-size="10" font-weight="600" fill="#4ADE80">✈ Offline</text>
+
+  <!-- AppBar -->
+  <text x="28" y="64" font-size="16" font-weight="800" fill="#FFFFFF">🧠 AI Document Assistant</text>
+  <rect x="228" y="48" width="66" height="22" rx="11" fill="#22C55E" fill-opacity="0.16" stroke="#22C55E"/>
+  <text x="261" y="62" font-size="9" font-weight="700" fill="#4ADE80" text-anchor="middle">● On-Device</text>
+
+  <!-- Attached Document Banner -->
+  <rect x="24" y="82" width="272" height="42" rx="10" fill="#171C26" stroke="#2D3748"/>
+  <text x="36" y="101" font-size="11" font-weight="700" fill="#F8FAFC">📄 Employment_Contract.pdf</text>
+  <text x="36" y="115" font-size="9.5" fill="#94A3B8">4 pages indexed • SmolLM2-135M GGUF</text>
+
+  <!-- Quick Action Chips -->
+  <rect x="24" y="134" width="78" height="24" rx="12" fill="#1E2433" stroke="#334155"/>
+  <text x="63" y="149" font-size="9.5" fill="#FDBA74" text-anchor="middle">✨ Summarize</text>
+  <rect x="108" y="134" width="84" height="24" rx="12" fill="#1E2433" stroke="#334155"/>
+  <text x="150" y="149" font-size="9.5" fill="#93C5FD" text-anchor="middle">📌 Action Items</text>
+  <rect x="198" y="134" width="96" height="24" rx="12" fill="#1E2433" stroke="#334155"/>
+  <text x="246" y="149" font-size="9.5" fill="#86EFAC" text-anchor="middle">📅 Dates &amp; Salary</text>
+
+  <!-- User Bubble -->
+  <rect x="74" y="172" width="222" height="42" rx="14" fill="#EA580C"/>
+  <text x="88" y="191" font-size="11" font-weight="600" fill="#FFFFFF">What is the salary, joining date,</text>
+  <text x="88" y="205" font-size="11" font-weight="600" fill="#FFFFFF">and notice period in this contract?</text>
+
+  <!-- AI Response Bubble -->
+  <rect x="24" y="226" width="262" height="238" rx="16" fill="#171C26" stroke="#283246"/>
+  <text x="38" y="248" font-size="11" font-weight="700" fill="#FB923C">🤖 Scanora Offline AI</text>
+
+  <text x="38" y="272" font-size="11" font-weight="700" fill="#F8FAFC">• Base Compensation:</text>
+  <text x="46" y="288" font-size="10.5" fill="#CBD5E1">₹14,50,000 per annum + performance bonus.</text>
+
+  <text x="38" y="312" font-size="11" font-weight="700" fill="#F8FAFC">• Joining Date:</text>
+  <text x="46" y="328" font-size="10.5" fill="#CBD5E1">November 15, 2026 (9:30 AM IST).</text>
+
+  <text x="38" y="352" font-size="11" font-weight="700" fill="#F8FAFC">• Notice Period:</text>
+  <text x="46" y="368" font-size="10.5" fill="#CBD5E1">60 days standard notice (30 days during</text>
+  <text x="46" y="382" font-size="10.5" fill="#CBD5E1">initial 3-month probation).</text>
+
+  <!-- Page Citation Pills -->
+  <text x="38" y="410" font-size="9.5" font-weight="600" fill="#94A3B8">SOURCE CITATIONS (TAP TO VIEW PAGE):</text>
+  <rect x="38" y="420" width="92" height="24" rx="8" fill="#1E293B" stroke="#3B82F6"/>
+  <text x="84" y="435" font-size="9.5" font-weight="700" fill="#93C5FD" text-anchor="middle">📖 Page 1 (Cl. 3)</text>
+  <rect x="138" y="420" width="92" height="24" rx="8" fill="#1E293B" stroke="#3B82F6"/>
+  <text x="184" y="435" font-size="9.5" font-weight="700" fill="#93C5FD" text-anchor="middle">📖 Page 3 (Cl. 9)</text>
+
+  <!-- Chat Input Field -->
+  <rect x="24" y="556" width="224" height="44" rx="22" fill="#171C26" stroke="#2D3748"/>
+  <text x="42" y="582" font-size="11" fill="#64748B">Ask anything about this PDF...</text>
+  <circle cx="274" cy="578" r="21" fill="#EA580C"/>
+  <text x="274" y="583" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">➤</text>
+</svg>
+

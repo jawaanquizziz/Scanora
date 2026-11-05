@@ -27,6 +27,8 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
   late List<ScanPage> _pages;
   int _currentPageIndex = 0;
   bool _isProcessing = false;
+  String _processingMessage = 'Applying filter...';
+  bool _applyFilterToAll = false;
   bool _hasSaved = false;
 
   @override
@@ -131,26 +133,90 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
   Future<void> _filterCurrentPage() async {
     if (_pages.isEmpty) return;
     final page = _pages[_currentPageIndex];
-    final updated = await Navigator.of(context).push<ScanPage>(
+    final result = await Navigator.of(context).push<FilterScreenResult>(
       MaterialPageRoute(
-        builder: (_) => FilterScreen(page: page),
+        builder: (_) => FilterScreen(
+          page: page,
+          totalPages: _pages.length,
+        ),
       ),
     );
 
-    if (updated != null && mounted) {
+    if (result != null && mounted) {
       setState(() {
-        _pages[_currentPageIndex] = updated;
+        _pages[_currentPageIndex] = result.updatedPage;
+        _hasSaved = false;
       });
+      if (result.applyToAllPages && _pages.length > 1) {
+        await _applyFilterToAllPages(result.updatedPage.filter);
+      }
+    }
+  }
+
+  Future<void> _applyFilterToAllPages(FilterType filter) async {
+    if (_pages.isEmpty) return;
+    setState(() {
+      _isProcessing = true;
+      _hasSaved = false;
+      _processingMessage = 'Applying ${filter.displayName} to all ${_pages.length} pages...';
+    });
+
+    try {
+      for (int i = 0; i < _pages.length; i++) {
+        if (!mounted) break;
+        final p = _pages[i];
+        setState(() {
+          _processingMessage =
+              'Applying ${filter.displayName} (${i + 1} of ${_pages.length})...';
+        });
+        if (p.filter != filter) {
+          p.filter = filter;
+          final processed = await ImageService().processPage(p);
+          p.processedImagePath = processed;
+        }
+      }
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Applied "${filter.displayName}" filter to all ${_pages.length} pages',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Batch filter error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _processingMessage = 'Applying filter...';
+        });
+      }
     }
   }
 
   Future<void> _applyDirectFilter(FilterType filter) async {
     if (_pages.isEmpty) return;
+
+    if (_applyFilterToAll && _pages.length > 1) {
+      await _applyFilterToAllPages(filter);
+      return;
+    }
+
     final page = _pages[_currentPageIndex];
     if (page.filter == filter) return;
 
     setState(() {
       _isProcessing = true;
+      _hasSaved = false;
+      _processingMessage = 'Applying ${filter.displayName}...';
     });
 
     page.filter = filter;
@@ -172,6 +238,7 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
       if (mounted) {
         setState(() {
           _isProcessing = false;
+          _processingMessage = 'Applying filter...';
         });
       }
     }
@@ -437,7 +504,7 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
               ],
             ),
             if (_isProcessing)
-              const LoadingOverlay(message: 'Applying filter...'),
+              LoadingOverlay(message: _processingMessage),
           ],
         ),
       ),
@@ -445,6 +512,9 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
   }
 
   Widget _buildFilterPills(ScanPage currentPage) {
+    final allSameFilter = _pages.length > 1 &&
+        _pages.every((p) => p.filter == currentPage.filter);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
@@ -454,61 +524,158 @@ class _PageReviewScreenState extends State<PageReviewScreen> {
           bottom: BorderSide(color: Color(0xFF222734), width: 1),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: FilterType.values.map((filter) {
-          final isSelected = currentPage.filter == filter;
-          IconData icon;
-          switch (filter) {
-            case FilterType.original:
-              icon = Icons.photo_outlined;
-              break;
-            case FilterType.enhance:
-              icon = Icons.auto_fix_high_rounded;
-              break;
-            case FilterType.grayscale:
-              icon = Icons.tonality_rounded;
-              break;
-            case FilterType.blackAndWhite:
-              icon = Icons.contrast_rounded;
-              break;
-          }
-
-          return InkWell(
-            onTap: _isProcessing ? null : () => _applyDirectFilter(filter),
-            borderRadius: BorderRadius.circular(20),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected ? AppColors.primaryBlue : const Color(0xFF1E232E),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: isSelected ? AppColors.primaryBlue : Colors.white12,
-                ),
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (_pages.length > 1) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 7, left: 2, right: 2),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    icon,
-                    size: 15,
-                    color: isSelected ? Colors.white : Colors.white70,
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      setState(() {
+                        _applyFilterToAll = !_applyFilterToAll;
+                      });
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Checkbox(
+                            value: _applyFilterToAll,
+                            activeColor: AppColors.primaryBlue,
+                            side: const BorderSide(color: Colors.white54, width: 1.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            onChanged: (val) {
+                              setState(() {
+                                _applyFilterToAll = val ?? false;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          'Apply filter to all ${_pages.length} pages',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 5),
-                  Text(
-                    filter.displayName,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.white70,
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: (_isProcessing || allSameFilter)
+                        ? null
+                        : () => _applyFilterToAllPages(currentPage.filter),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: allSameFilter
+                            ? Colors.white.withAlpha(15)
+                            : AppColors.primaryBlue.withAlpha(38),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: allSameFilter
+                              ? Colors.white24
+                              : AppColors.primaryBlue.withAlpha(140),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            allSameFilter
+                                ? Icons.done_all_rounded
+                                : Icons.library_add_check_rounded,
+                            size: 13,
+                            color: allSameFilter ? Colors.white54 : AppColors.primaryBlue,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            allSameFilter
+                                ? 'Applied to all'
+                                : 'Apply "${currentPage.filter.displayName}" to all',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: allSameFilter ? Colors.white54 : AppColors.primaryBlue,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          );
-        }).toList(),
+          ],
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: FilterType.values.map((filter) {
+              final isSelected = currentPage.filter == filter;
+              IconData icon;
+              switch (filter) {
+                case FilterType.original:
+                  icon = Icons.photo_outlined;
+                  break;
+                case FilterType.enhance:
+                  icon = Icons.auto_fix_high_rounded;
+                  break;
+                case FilterType.grayscale:
+                  icon = Icons.tonality_rounded;
+                  break;
+                case FilterType.blackAndWhite:
+                  icon = Icons.contrast_rounded;
+                  break;
+              }
+
+              return InkWell(
+                onTap: _isProcessing ? null : () => _applyDirectFilter(filter),
+                borderRadius: BorderRadius.circular(20),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.primaryBlue : const Color(0xFF1E232E),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primaryBlue : Colors.white12,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 15,
+                        color: isSelected ? Colors.white : Colors.white70,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        filter.displayName,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.white70,
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

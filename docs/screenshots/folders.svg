@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="640" viewBox="0 0 320 640" font-family="'Segoe UI', 'Inter', Arial, sans-serif">
+  <rect x="4" y="4" width="312" height="632" rx="38" fill="#0B0E14" stroke="#2D3748" stroke-width="4"/>
+  <rect x="12" y="12" width="296" height="616" rx="32" fill="#0F131A"/>
+  <circle cx="160" cy="26" r="5" fill="#05070A"/>
+  <text x="32" y="30" font-size="10" font-weight="600" fill="#E2E8F0">12:34</text>
+  <text x="255" y="30" font-size="10" font-weight="600" fill="#E2E8F0">5G 100%</text>
+
+  <!-- AppBar -->
+  <text x="24" y="64" font-size="18" font-weight="800" fill="#FFFFFF">Folders &amp; Vaults</text>
+  <rect x="206" y="46" width="90" height="28" rx="14" fill="#EA580C"/>
+  <text x="251" y="64" font-size="10.5" font-weight="700" fill="#FFFFFF" text-anchor="middle">+ New Folder</text>
+
+  <!-- Folder Grid -->
+  <!-- Card 1: Biometric Vault -->
+  <rect x="24" y="92" width="130" height="134" rx="16" fill="#171C26" stroke="#EA580C" stroke-width="1.5"/>
+  <rect x="38" y="106" width="40" height="40" rx="12" fill="#EA580C" fill-opacity="0.18"/>
+  <text x="58" y="132" font-size="18" text-anchor="middle">🔐</text>
+  <rect x="92" y="108" width="50" height="18" rx="9" fill="#EA580C" fill-opacity="0.22"/>
+  <text x="117" y="120" font-size="8.5" font-weight="700" fill="#FB923C" text-anchor="middle">VAULT</text>
+  <text x="38" y="172" font-size="13" font-weight="700" fill="#FFFFFF">KYC &amp; IDs</text>
+  <text x="38" y="190" font-size="10" fill="#94A3B8">3 documents</text>
+  <text x="38" y="210" font-size="9" font-weight="600" fill="#FB923C">👆 Biometric Locked</text>
+
+  <!-- Card 2: Contracts -->
+  <rect x="166" y="92" width="130" height="134" rx="16" fill="#171C26" stroke="#262F40"/>
+  <rect x="180" y="106" width="40" height="40" rx="12" fill="#3B82F6" fill-opacity="0.18"/>
+  <text x="200" y="132" font-size="18" text-anchor="middle">📁</text>
+  <text x="180" y="172" font-size="13" font-weight="700" fill="#FFFFFF">Legal &amp; Work</text>
+  <text x="180" y="190" font-size="10" fill="#94A3B8">5 documents</text>
+  <text x="180" y="210" font-size="9" fill="#64748B">☁ Synced to Drive</text>
+
+  <!-- Card 3: Academic -->
+  <rect x="24" y="240" width="130" height="134" rx="16" fill="#171C26" stroke="#262F40"/>
+  <rect x="38" y="254" width="40" height="40" rx="12" fill="#10B981" fill-opacity="0.18"/>
+  <text x="58" y="280" font-size="18" text-anchor="middle">📚</text>
+  <text x="38" y="320" font-size="13" font-weight="700" fill="#FFFFFF">College Notes</text>
+  <text x="38" y="338" font-size="10" fill="#94A3B8">12 documents</text>
+  <text x="38" y="358" font-size="9" fill="#64748B">☁ Synced to Drive</text>
+
+  <!-- Card 4: Medical Vault -->
+  <rect x="166" y="240" width="130" height="134" rx="16" fill="#171C26" stroke="#A855F7" stroke-width="1.5"/>
+  <rect x="180" y="254" width="40" height="40" rx="12" fill="#A855F7" fill-opacity="0.18"/>
+  <text x="200" y="280" font-size="18" text-anchor="middle">🏥</text>
+  <rect x="234" y="256" width="50" height="18" rx="9" fill="#A855F7" fill-opacity="0.22"/>
+  <text x="259" y="268" font-size="8.5" font-weight="700" fill="#C084FC" text-anchor="middle">VAULT</text>
+  <text x="180" y="320" font-size="13" font-weight="700" fill="#FFFFFF">Medical Bills</text>
+  <text x="180" y="338" font-size="10" fill="#94A3B8">4 documents</text>
+  <text x="180" y="358" font-size="9" font-weight="600" fill="#C084FC">👆 Biometric Locked</text>
+
+  <!-- Biometric Prompt Info Card -->
+  <rect x="24" y="394" width="272" height="74" rx="14" fill="#161D2A" stroke="#2D3748"/>
+  <text x="42" y="420" font-size="12" font-weight="700" fill="#F8FAFC">🛡️ Hardware Biometric Protection</text>
+  <text x="42" y="438" font-size="10" fill="#94A3B8">Long-press any folder to lock or unlock it with</text>
+  <text x="42" y="452" font-size="10" fill="#94A3B8">your device fingerprint, Face ID, or PIN.</text>
+</svg>
+

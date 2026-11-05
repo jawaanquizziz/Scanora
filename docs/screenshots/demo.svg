@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="440" viewBox="0 0 880 440" font-family="'Segoe UI', 'Inter', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0F17"/>
+      <stop offset="100%" stop-color="#1A1F2E"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+    <style>
+      .beam { animation: scanMove 2.8s ease-in-out infinite; }
+      .pulse { animation: pulseGlow 2.4s ease-in-out infinite; }
+      .chat1 { animation: appear 4s ease-in-out infinite; }
+      @keyframes scanMove { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(150px); } }
+      @keyframes pulseGlow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+      @keyframes appear { 0%,20% { opacity: 0.35; } 40%,90% { opacity: 1; } 100% { opacity: 0.35; } }
+    </style>
+  </defs>
+
+  <rect width="880" height="440" rx="22" fill="url(#bg)" stroke="#262F40" stroke-width="2"/>
+
+  <!-- Step 1 Card: Scan & Batch Filter -->
+  <g transform="translate(28, 28)">
+    <rect width="260" height="384" rx="18" fill="#131822" stroke="#2D3748"/>
+    <rect x="16" y="16" width="68" height="22" rx="11" fill="#EA580C" fill-opacity="0.2"/>
+    <text x="50" y="31" font-size="10" font-weight="700" fill="#FB923C" text-anchor="middle">STEP 1</text>
+    <text x="16" y="58" font-size="15" font-weight="800" fill="#FFFFFF">Scan &amp; Batch Filter</text>
+    <text x="16" y="76" font-size="11" fill="#94A3B8">Apply filter to all pages in 1 tap</text>
+
+    <!-- Document with animated scan beam -->
+    <rect x="45" y="96" width="170" height="190" rx="10" fill="#F8FAFC"/>
+    <rect x="62" y="116" width="84" height="8" rx="4" fill="#EA580C"/>
+    <rect x="62" y="134" width="136" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="62" y="146" width="120" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="62" y="158" width="130" height="6" rx="3" fill="#CBD5E1"/>
+    <rect x="62" y="180" width="136" height="48" rx="6" fill="#FFEDD5"/>
+    <rect x="45" y="100" width="170" height="6" fill="#EA580C" class="beam"/>
+
+    <!-- Apply to all badge -->
+    <rect x="20" y="302" width="220" height="30" rx="8" fill="#1C2434" stroke="#EA580C"/>
+    <text x="130" y="321" font-size="10.5" font-weight="700" fill="#FDBA74" text-anchor="middle">☑ Apply "Enhance" to all 4 pages</text>
+
+    <rect x="20" y="340" width="220" height="28" rx="8" fill="url(#orange)"/>
+    <text x="130" y="358" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle">✓ Enhanced All Pages</text>
+  </g>
+
+  <!-- Step 2 Card: Encrypt, Watermark & Drive Backup -->
+  <g transform="translate(310, 28)">
+    <rect width="260" height="384" rx="18" fill="#131822" stroke="#2D3748"/>
+    <rect x="16" y="16" width="68" height="22" rx="11" fill="#22C55E" fill-opacity="0.2"/>
+    <text x="50" y="31" font-size="10" font-weight="700" fill="#4ADE80" text-anchor="middle">STEP 2</text>
+    <text x="16" y="58" font-size="15" font-weight="800" fill="#FFFFFF">Lock, Stamp &amp; Sync</text>
+    <text x="16" y="76" font-size="11" fill="#94A3B8">AES-128 + KYC Stamp + Google Drive</text>
+
+    <!-- Watermarked & Locked Preview -->
+    <rect x="45" y="96" width="170" height="150" rx="10" fill="#F8FAFC"/>
+    <rect x="62" y="114" width="90" height="7" rx="3" fill="#334155"/>
+    <rect x="62" y="128" width="130" height="5" rx="2.5" fill="#CBD5E1"/>
+    <rect x="62" y="140" width="115" height="5" rx="2.5" fill="#CBD5E1"/>
+    <text x="130" y="178" font-size="17" font-weight="800" fill="#EF4444" fill-opacity="0.28" text-anchor="middle" transform="rotate(-28 130 178)">FOR KYC ONLY</text>
+
+    <!-- Security Pills -->
+    <rect x="20" y="260" width="220" height="32" rx="8" fill="#1A2232" stroke="#334155"/>
+    <text x="34" y="280" font-size="11" font-weight="600" fill="#F8FAFC">🔒 AES-128 Password Protected</text>
+
+    <rect x="20" y="300" width="220" height="32" rx="8" fill="#1A2232" stroke="#334155"/>
+    <text x="34" y="320" font-size="11" font-weight="600" fill="#F8FAFC">👆 Biometric Vault Protected</text>
+
+    <!-- Google Drive Synced Row -->
+    <rect x="20" y="340" width="220" height="28" rx="8" fill="#22C55E" fill-opacity="0.16" stroke="#22C55E"/>
+    <polygon points="38,349 43,357 33,357" fill="#00AC47"/>
+    <polygon points="38,349 43,357 40,357" fill="#FFBA00"/>
+    <polygon points="33,357 43,357 41,360 35,360" fill="#2684FC"/>
+    <text x="52" y="358" font-size="10.5" font-weight="700" fill="#4ADE80">Backed up to Google Drive</text>
+  </g>
+
+  <!-- Step 3 Card: Offline On-Device AI Chat -->
+  <g transform="translate(592, 28)">
+    <rect width="260" height="384" rx="18" fill="#131822" stroke="#2D3748"/>
+    <rect x="16" y="16" width="68" height="22" rx="11" fill="#A855F7" fill-opacity="0.2"/>
+    <text x="50" y="31" font-size="10" font-weight="700" fill="#C084FC" text-anchor="middle">STEP 3</text>
+    <text x="16" y="58" font-size="15" font-weight="800" fill="#FFFFFF">Offline AI Assistant</text>
+    <text x="16" y="76" font-size="11" fill="#94A3B8">SmolLM2 GGUF • 100% On-Device</text>
+
+    <rect x="20" y="96" width="220" height="36" rx="10" fill="#EA580C"/>
+    <text x="32" y="118" font-size="10.5" font-weight="600" fill="#FFFFFF">Summarize key clauses &amp; dates</text>
+
+    <g class="chat1">
+      <rect x="20" y="144" width="220" height="184" rx="12" fill="#1A2232" stroke="#334155"/>
+      <text x="32" y="166" font-size="10.5" font-weight="700" fill="#FB923C">🤖 Scanora Offline AI</text>
+      <text x="32" y="188" font-size="10" fill="#E2E8F0">• Contract Value: ₹14,50,000/yr</text>
+      <text x="32" y="206" font-size="10" fill="#E2E8F0">• Start Date: Nov 15, 2026</text>
+      <text x="32" y="224" font-size="10" fill="#E2E8F0">• Probation: 3 Months</text>
+      <text x="32" y="242" font-size="10" fill="#E2E8F0">• Notice Period: 60 Days</text>
+
+      <rect x="32" y="262" width="88" height="22" rx="6" fill="#1E293B" stroke="#3B82F6"/>
+      <text x="76" y="276" font-size="9" font-weight="700" fill="#93C5FD" text-anchor="middle">📖 Page 1 Citation</text>
+      <rect x="128" y="262" width="88" height="22" rx="6" fill="#1E293B" stroke="#3B82F6"/>
+      <text x="172" y="276" font-size="9" font-weight="700" fill="#93C5FD" text-anchor="middle">📖 Page 3 Citation</text>
+      <text x="32" y="308" font-size="9" fill="#4ADE80">✓ Processed 100% offline on phone</text>
+    </g>
+
+    <rect x="20" y="340" width="220" height="28" rx="14" fill="#1C2434" stroke="#334155"/>
+    <text x="36" y="358" font-size="10" fill="#94A3B8">Ask anything about this PDF...</text>
+  </g>
+</svg>
+

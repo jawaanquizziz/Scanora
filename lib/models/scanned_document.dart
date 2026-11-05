@@ -19,6 +19,7 @@ class ScannedDocument {
   // Google Drive Cloud Sync metadata
   final String? driveFileId;
   final DateTime? syncedAt;
+  final String? ownerEmail;
 
   ScannedDocument({
     required this.id,
@@ -37,6 +38,7 @@ class ScannedDocument {
     this.isVaultLocked = false,
     this.driveFileId,
     this.syncedAt,
+    this.ownerEmail,
   });
 
   bool get isCloudSynced =>
@@ -65,6 +67,7 @@ class ScannedDocument {
     String? driveFileId,
     DateTime? syncedAt,
     bool clearDriveSync = false,
+    String? ownerEmail,
   }) {
     return ScannedDocument(
       id: id ?? this.id,
@@ -83,6 +86,7 @@ class ScannedDocument {
       isVaultLocked: isVaultLocked ?? this.isVaultLocked,
       driveFileId: clearDriveSync ? null : (driveFileId ?? this.driveFileId),
       syncedAt: clearDriveSync ? null : (syncedAt ?? this.syncedAt),
+      ownerEmail: ownerEmail ?? this.ownerEmail,
     );
   }
 
@@ -103,6 +107,7 @@ class ScannedDocument {
     'isVaultLocked': isVaultLocked,
     'driveFileId': driveFileId,
     'syncedAt': syncedAt?.toIso8601String(),
+    'ownerEmail': ownerEmail,
   };
 
   factory ScannedDocument.fromJson(Map<String, dynamic> json) => ScannedDocument(
@@ -122,5 +127,6 @@ class ScannedDocument {
     isVaultLocked: json['isVaultLocked'] as bool? ?? false,
     driveFileId: json['driveFileId'] as String?,
     syncedAt: json['syncedAt'] != null ? DateTime.tryParse(json['syncedAt'] as String) : null,
+    ownerEmail: json['ownerEmail'] as String?,
   );
 }

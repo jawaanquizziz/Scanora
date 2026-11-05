@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="640" viewBox="0 0 320 640" font-family="'Segoe UI', 'Inter', Arial, sans-serif">
+  <!-- Phone Frame -->
+  <rect x="4" y="4" width="312" height="632" rx="38" fill="#0B0E14" stroke="#2D3748" stroke-width="4"/>
+  <rect x="12" y="12" width="296" height="616" rx="32" fill="#0F131A"/>
+  <!-- Status Bar & Punch Hole -->
+  <circle cx="160" cy="26" r="5" fill="#05070A"/>
+  <text x="32" y="30" font-size="10" font-weight="600" fill="#E2E8F0">12:30</text>
+  <text x="255" y="30" font-size="10" font-weight="600" fill="#E2E8F0">5G 100%</text>
+
+  <!-- AppBar -->
+  <rect x="24" y="46" width="26" height="26" rx="7" fill="#EA580C"/>
+  <path d="M31 54h12M31 59h12M31 64h8" stroke="#FFF" stroke-width="2" stroke-linecap="round"/>
+  <text x="58" y="65" font-size="17" font-weight="800" fill="#FFFFFF">Scanora</text>
+
+  <!-- Connected Profile Avatar with Drive Badge in AppBar -->
+  <circle cx="250" cy="59" r="11" fill="#1A73E8" stroke="#334155" stroke-width="1.2"/>
+  <text x="250" y="63" font-size="10" font-weight="700" fill="#FFF" text-anchor="middle">J</text>
+  <circle cx="258" cy="67" r="4.5" fill="#1E2430"/>
+  <polygon points="258,64 261,69 255,69" fill="#00AC47"/>
+  <circle cx="282" cy="59" r="11" fill="#181F2C"/>
+  <text x="282" y="63" font-size="11" fill="#94A3B8" text-anchor="middle">⚙</text>
+
+  <!-- Primary Quick Action Cards -->
+  <defs>
+    <linearGradient id="orangeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FB923C"/>
+      <stop offset="100%" stop-color="#EA580C"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="88" width="142" height="96" rx="14" fill="url(#orangeGrad)"/>
+  <rect x="36" y="100" width="32" height="32" rx="9" fill="#FFFFFF" fill-opacity="0.22"/>
+  <circle cx="52" cy="116" r="6" stroke="#FFF" stroke-width="2" fill="none"/>
+  <text x="36" y="154" font-size="13" font-weight="700" fill="#FFFFFF">Scan Document</text>
+  <text x="36" y="170" font-size="10.5" fill="#FFEDD5">Camera capture</text>
+
+  <rect x="176" y="88" width="120" height="96" rx="14" fill="#171C26" stroke="#262F40"/>
+  <rect x="188" y="100" width="32" height="32" rx="9" fill="#232B3A"/>
+  <rect x="197" y="109" width="14" height="14" rx="2" stroke="#F97316" stroke-width="1.8" fill="none"/>
+  <text x="188" y="154" font-size="13" font-weight="700" fill="#FFFFFF">Import Images</text>
+  <text x="188" y="170" font-size="10.5" fill="#94A3B8">From gallery</text>
+
+  <!-- Google Drive Cloud Backup Active Pill Banner -->
+  <rect x="24" y="196" width="272" height="48" rx="12" fill="#161F30" stroke="#2B4268"/>
+  <circle cx="46" cy="220" r="14" fill="#1A73E8"/>
+  <text x="46" y="225" font-size="12" font-weight="700" fill="#FFF" text-anchor="middle">J</text>
+  <!-- Mini Google Drive Triangle Badge -->
+  <circle cx="56" cy="230" r="6" fill="#0F131A" stroke="#334155" stroke-width="1"/>
+  <path d="M56 226 L59 232 L53 232 Z" fill="#00AC47"/>
+  <path d="M56 226 L59 232 L57 232 Z" fill="#FFBA00"/>
+  <path d="M53 232 L59 232 L58 234 L54 234 Z" fill="#2684FC"/>
+  <text x="70" y="216" font-size="11.5" font-weight="700" fill="#F8FAFC">Google Drive Backup Active</text>
+  <text x="70" y="232" font-size="10" fill="#94A3B8">jawaan25fcrit@gmail.com • 4/4 synced</text>
+  <text x="282" y="224" font-size="14" fill="#64748B">›</text>
+
+  <!-- Recent Scans Header -->
+  <text x="24" y="268" font-size="14" font-weight="700" fill="#F8FAFC">Recent Scans</text>
+  <text x="260" y="268" font-size="11" fill="#94A3B8">4 scans</text>
+
+  <!-- Document Card 1 -->
+  <rect x="24" y="280" width="272" height="74" rx="14" fill="#171C26" stroke="#242C3D"/>
+  <rect x="34" y="290" width="44" height="54" rx="7" fill="#F8FAFC"/>
+  <rect x="40" y="298" width="24" height="4" rx="2" fill="#EA580C"/>
+  <rect x="40" y="306" width="32" height="3" rx="1.5" fill="#CBD5E1"/>
+  <rect x="40" y="312" width="28" height="3" rx="1.5" fill="#CBD5E1"/>
+  <text x="56" y="328" font-size="6" font-weight="800" fill="#EF4444" fill-opacity="0.4" text-anchor="middle" transform="rotate(-25 56 328)">KYC ONLY</text>
+  <text x="90" y="305" font-size="12.5" font-weight="700" fill="#F8FAFC">Aadhaar_KYC_Verified.pdf</text>
+  <text x="90" y="321" font-size="10" fill="#94A3B8">2 pages • 410 KB • Today</text>
+  <rect x="90" y="328" width="54" height="16" rx="8" fill="#EA580C" fill-opacity="0.18"/>
+  <text x="117" y="339" font-size="8.5" font-weight="700" fill="#FB923C" text-anchor="middle">🔒 AES-128</text>
+  <rect x="150" y="328" width="52" height="16" rx="8" fill="#22C55E" fill-opacity="0.16"/>
+  <text x="176" y="339" font-size="8.5" font-weight="700" fill="#4ADE80" text-anchor="middle">☁ Synced</text>
+
+  <!-- Document Card 2 -->
+  <rect x="24" y="364" width="272" height="74" rx="14" fill="#171C26" stroke="#242C3D"/>
+  <rect x="34" y="374" width="44" height="54" rx="7" fill="#F8FAFC"/>
+  <rect x="40" y="382" width="28" height="4" rx="2" fill="#3B82F6"/>
+  <rect x="40" y="390" width="32" height="3" rx="1.5" fill="#CBD5E1"/>
+  <rect x="40" y="396" width="30" height="3" rx="1.5" fill="#CBD5E1"/>
+  <text x="90" y="389" font-size="12.5" font-weight="700" fill="#F8FAFC">Employment_Contract.pdf</text>
+  <text x="90" y="405" font-size="10" fill="#94A3B8">4 pages • 1.2 MB • Today</text>
+  <rect x="90" y="412" width="58" height="16" rx="8" fill="#A855F7" fill-opacity="0.18"/>
+  <text x="119" y="423" font-size="8.5" font-weight="700" fill="#C084FC" text-anchor="middle">✨ AI Ready</text>
+  <rect x="154" y="412" width="52" height="16" rx="8" fill="#22C55E" fill-opacity="0.16"/>
+  <text x="180" y="423" font-size="8.5" font-weight="700" fill="#4ADE80" text-anchor="middle">☁ Synced</text>
+
+  <!-- Document Card 3 -->
+  <rect x="24" y="448" width="272" height="74" rx="14" fill="#171C26" stroke="#242C3D"/>
+  <rect x="34" y="458" width="44" height="54" rx="7" fill="#F8FAFC"/>
+  <rect x="40" y="466" width="24" height="4" rx="2" fill="#10B981"/>
+  <rect x="40" y="474" width="32" height="3" rx="1.5" fill="#CBD5E1"/>
+  <text x="90" y="473" font-size="12.5" font-weight="700" fill="#F8FAFC">Semester_Notes_Unit3.pdf</text>
+  <text x="90" y="489" font-size="10" fill="#94A3B8">8 pages • 2.4 MB • Yesterday</text>
+  <rect x="90" y="496" width="52" height="16" rx="8" fill="#22C55E" fill-opacity="0.16"/>
+  <text x="116" y="507" font-size="8.5" font-weight="700" fill="#4ADE80" text-anchor="middle">☁ Synced</text>
+
+  <!-- Bottom Navigation Bar -->
+  <rect x="12" y="564" width="296" height="64" rx="24" fill="url(#orangeGrad)"/>
+  <rect x="24" y="572" width="56" height="44" rx="12" fill="#FFFFFF" fill-opacity="0.22"/>
+  <text x="52" y="592" font-size="13" fill="#FFF" text-anchor="middle">🏠</text>
+  <text x="52" y="608" font-size="9.5" font-weight="700" fill="#FFF" text-anchor="middle">Home</text>
+
+  <text x="112" y="592" font-size="13" fill="#FFEDD5" text-anchor="middle">📄</text>
+  <text x="112" y="608" font-size="9" fill="#FFEDD5" text-anchor="middle">My Scans</text>
+
+  <text x="168" y="592" font-size="13" fill="#FFEDD5" text-anchor="middle">💬</text>
+  <text x="168" y="608" font-size="9" fill="#FFEDD5" text-anchor="middle">AI Chat</text>
+
+  <text x="222" y="592" font-size="13" fill="#FFEDD5" text-anchor="middle">📁</text>
+  <text x="222" y="608" font-size="9" fill="#FFEDD5" text-anchor="middle">Folders</text>
+
+  <text x="274" y="592" font-size="13" fill="#FFEDD5" text-anchor="middle">⚙️</text>
+  <text x="274" y="608" font-size="9" fill="#FFEDD5" text-anchor="middle">Settings</text>
+</svg>
+

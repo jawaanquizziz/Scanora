@@ -5,12 +5,24 @@ import '../../core/widgets/loading_overlay.dart';
 import '../../models/scan_page.dart';
 import '../../services/image_service.dart';
 
+class FilterScreenResult {
+  final ScanPage updatedPage;
+  final bool applyToAllPages;
+
+  const FilterScreenResult({
+    required this.updatedPage,
+    required this.applyToAllPages,
+  });
+}
+
 class FilterScreen extends StatefulWidget {
   final ScanPage page;
+  final int totalPages;
 
   const FilterScreen({
     super.key,
     required this.page,
+    this.totalPages = 1,
   });
 
   @override
@@ -21,6 +33,7 @@ class _FilterScreenState extends State<FilterScreen> {
   late ScanPage _currentPage;
   late FilterType _selectedFilter;
   bool _isProcessing = false;
+  bool _applyToAllPages = false;
   String _previewImagePath = '';
 
   @override
@@ -65,7 +78,12 @@ class _FilterScreenState extends State<FilterScreen> {
   void _applyAndDone() {
     _currentPage.processedImagePath = _previewImagePath;
     _currentPage.filter = _selectedFilter;
-    Navigator.of(context).pop(_currentPage);
+    Navigator.of(context).pop(
+      FilterScreenResult(
+        updatedPage: _currentPage,
+        applyToAllPages: _applyToAllPages && widget.totalPages > 1,
+      ),
+    );
   }
 
   @override
@@ -88,7 +106,11 @@ class _FilterScreenState extends State<FilterScreen> {
                 backgroundColor: AppColors.primaryBlue,
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Apply'),
+              child: Text(
+                _applyToAllPages && widget.totalPages > 1
+                    ? 'Apply to All (${widget.totalPages})'
+                    : 'Apply',
+              ),
             ),
           ),
         ],
@@ -112,6 +134,45 @@ class _FilterScreenState extends State<FilterScreen> {
                   ),
                 ),
               ),
+
+              // Apply to all pages toggle when multiple pages exist
+              if (widget.totalPages > 1)
+                Container(
+                  color: const Color(0xFF14171E),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.library_add_check_rounded,
+                            color: AppColors.primaryBlue,
+                            size: 19,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Apply filter to all ${widget.totalPages} pages',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Switch.adaptive(
+                        value: _applyToAllPages,
+                        activeTrackColor: AppColors.primaryBlue,
+                        onChanged: (val) {
+                          setState(() {
+                            _applyToAllPages = val;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ),
 
               // Bottom Filter Selector
               Container(

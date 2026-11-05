@@ -7,6 +7,7 @@ import '../../core/utils/file_utils.dart';
 import '../../core/widgets/custom_dialogs.dart';
 import '../../core/widgets/document_thumbnail_view.dart';
 import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/google_drive_icon.dart';
 import '../../core/widgets/scanora_logo.dart';
 import '../../models/scanned_document.dart';
 import '../../services/google_drive_service.dart';
@@ -221,10 +222,15 @@ class HomeScreen extends StatelessWidget {
                 tooltip: drive.isSignedIn
                     ? 'Google Drive Connected (${drive.userEmail})'
                     : 'Connect Google Drive & Settings',
-                icon: Icon(
-                  drive.isSignedIn ? Icons.cloud_done_rounded : Icons.cloud_queue_rounded,
-                  color: drive.isSignedIn ? AppColors.cloudBlue : null,
-                ),
+                icon: drive.isSignedIn
+                    ? GoogleAccountAvatar(
+                        photoUrl: drive.userPhotoUrl,
+                        displayName: drive.userDisplayName,
+                        email: drive.userEmail,
+                        radius: 14,
+                        showDriveBadge: true,
+                      )
+                    : const GoogleDriveLogo(size: 22),
                 onPressed: () {
                   onNavigateToSettings?.call();
                 },
@@ -353,18 +359,26 @@ class HomeScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: AppColors.primaryBlue.withAlpha(30),
-                borderRadius: BorderRadius.circular(10),
+            if (drive.isSignedIn)
+              GoogleAccountAvatar(
+                photoUrl: drive.userPhotoUrl,
+                displayName: drive.userDisplayName,
+                email: drive.userEmail,
+                radius: 17,
+                showDriveBadge: true,
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF232D42) : Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                child: const GoogleDriveLogo(size: 18),
               ),
-              child: Icon(
-                drive.isSignedIn ? Icons.cloud_done_rounded : Icons.add_to_drive_rounded,
-                size: 18,
-                color: AppColors.primaryBlue,
-              ),
-            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -373,7 +387,7 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     drive.isSignedIn
                         ? 'Google Drive Backup Active'
-                        : 'Google Drive Cloud Backup',
+                        : 'Google Drive Backup',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -382,7 +396,7 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     drive.isSignedIn
                         ? '${drive.userEmail} • $syncedCount/${allDocs.length} synced'
-                        : 'Tap to sign in with Google & auto-save scans to Drive',
+                        : 'Connect your Google Account to back up PDFs',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -396,7 +410,7 @@ class HomeScreen extends StatelessWidget {
             const Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: AppColors.primaryBlue,
+              color: AppColors.secondaryText,
             ),
           ],
         ),

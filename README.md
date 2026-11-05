@@ -5,7 +5,7 @@
 <br/>
 
 <a href="https://github.com/jawaanquizziz/Scanora">
-  <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=24&duration=3000&pause=800&color=F97316&center=true&vCenter=true&width=720&lines=📄+Scan+documents+in+seconds;🧠+Chat+with+your+PDFs+—+100%25+offline;🔐+AES-128+password-locked+PDFs;🛡️+Anti-fraud+KYC+watermarks;👆+Biometric+vault+for+sensitive+files;☁️+Backup+to+YOUR+Google+Drive" alt="Typing animation"/>
+  <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=700&size=22&duration=3000&pause=800&color=F97316&center=true&vCenter=true&width=760&lines=Multi-page+document+scanner+with+1-tap+batch+filters;100%25+offline+on-device+AI+document+chat+(SmolLM2+GGUF);AES-128+password-locked+PDFs+%26+anti-fraud+KYC+watermarks;Biometric+fingerprint+%2F+face+vault+for+sensitive+records;Direct+backup+to+your+personal+Google+Drive" alt="Scanora Highlights"/>
 </a>
 
 <br/>
@@ -13,30 +13,21 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.12-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
 [![Android](https://img.shields.io/badge/Android-5.0%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](#-installation)
-[![On-Device AI](https://img.shields.io/badge/AI-100%25%20Offline-F97316?style=for-the-badge&logo=openai&logoColor=white)](#-on-device-ai-document-assistant)
-[![APK Size](https://img.shields.io/badge/APK-~20%20MB-EA580C?style=for-the-badge&logo=files&logoColor=white)](#-installation)
+[![On-Device AI](https://img.shields.io/badge/On--Device%20LLM-SmolLM2%20GGUF-F97316?style=for-the-badge)](#-on-device-ai-document-assistant)
+[![Google Drive](https://img.shields.io/badge/Google%20Drive-Cloud%20Sync-1A73E8?style=for-the-badge&logo=googledrive&logoColor=white)](#%EF%B8%8F-google-drive-cloud-backup)
+[![APK Size](https://img.shields.io/badge/Release%20APK-20.0%20MB-16A34A?style=for-the-badge)](#-installation)
 
-[![ML Kit](https://img.shields.io/badge/Google-ML%20Kit-4285F4?style=flat-square&logo=google&logoColor=white)](https://developers.google.com/ml-kit)
-[![llama.cpp](https://img.shields.io/badge/llama.cpp-GGUF-black?style=flat-square)](https://github.com/ggerganov/llama.cpp)
-[![Syncfusion PDF](https://img.shields.io/badge/Syncfusion-PDF-FF6F00?style=flat-square)](https://pub.dev/packages/syncfusion_flutter_pdf)
-[![Google Drive](https://img.shields.io/badge/Google%20Drive-API%20v3-1FA463?style=flat-square&logo=googledrive&logoColor=white)](https://developers.google.com/drive)
-[![Firebase](https://img.shields.io/badge/Firebase-Google%20Services-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
-![Stars](https://img.shields.io/github/stars/jawaanquizziz/Scanora?style=flat-square&color=F97316)
-
-**[✨ Features](#-features) • [📱 Screenshots](#-screenshots) • [🏗️ Architecture](#%EF%B8%8F-architecture) • [🧰 Tech Stack](#-tech-stack) • [⚡ Installation](#-installation) • [🚀 Roadmap](#-future-scope)**
+**[Overview](#-overview) • [Key Features](#-key-features) • [App Screens](#-app-screens) • [Google Drive Sync](#%EF%B8%8F-google-drive-cloud-backup) • [Architecture](#%EF%B8%8F-architecture) • [Tech Stack](#-tech-stack) • [Installation](#-installation)**
 
 </div>
 
 ---
 
-## 📖 About
+## 📖 Overview
 
-**Scanora** is a privacy-first, AI-powered mobile document scanner built with **Flutter**.
+**Scanora** is a privacy-first Android document scanner and offline AI document assistant built with **Flutter**.
 
-Most scanner apps lock basic features behind subscriptions, and most "chat with PDF" tools upload your private documents — Aadhaar, PAN, bank statements, contracts, medical reports — to someone else's server. **Scanora does everything on your phone.** Capture, enhancement, OCR, PDF encryption, watermarking and even the **LLM-powered document assistant** all run locally. Cloud backup is optional and goes straight into **your own Google Drive**.
-
-> [!IMPORTANT]
-> **Your documents never leave your device** unless *you* choose to back them up to your personal Google Drive.
+Most mobile scanners lock clean exports, batch filters, and PDF encryption behind subscriptions, while cloud "Chat with PDF" tools upload sensitive personal files—such as government IDs, KYC forms, contracts, and bank statements—to external servers. **Scanora keeps the entire pipeline on your device**: camera edge detection, perspective cropping, batch image enhancement, OCR, AES-128 PDF password protection, anti-fraud watermarking, and local GGUF LLM inference all execute offline on the phone. When cloud backup is enabled, documents sync directly to a `"Scanora Documents"` folder inside **your own Google Drive**.
 
 <div align="center">
   <img src="docs/readme/workflow.svg" alt="Capture → Enhance → Secure → Understand → Backup" width="100%"/>
@@ -44,49 +35,42 @@ Most scanner apps lock basic features behind subscriptions, and most "chat with 
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### 📷 Smart Scanning
-- **Auto edge detection** via Google ML Kit Document Scanner
-- **Manual 4-point perspective crop** & rotate
-- **Multi-page** capture + **gallery import**
-- Live filters: **Original · Enhance · Grayscale · B&W**
-- Export as **A4** or **US Letter** PDF
+### 📷 Multi-Page Scanning & Batch Filters
+- **Automatic Edge Detection:** Powered by Google ML Kit Document Scanner with manual 4-point perspective crop.
+- **Apply Filter to All Pages:** Preview **Original**, **Enhance**, **Grayscale**, or **B&W** on one page and apply it across all scanned pages in a single tap.
+- **Standard PDF Export:** Generates crisp **A4** or **US Letter** PDFs with automatic cover thumbnails.
 
 </td>
 <td width="50%" valign="top">
 
-### 🧠 On-Device AI Assistant
-- Chat with any PDF — **fully offline**
-- Local **GGUF LLM** (SmolLM2-135M Instruct) via `llama.cpp`
-- Hybrid text extraction: **digital PDF text + ML Kit OCR**
-- Chunking + retrieval with **source citations** to the page
-- One-tap: **Summarize · Action items · Dates & amounts**
+### 🧠 100% Offline AI Document Assistant
+- **Local GGUF Inference:** Runs **SmolLM2-135M Instruct (`Q4_K_M`)** on-device via `llama_cpp_dart` in a background isolate, paired with a fast rule-based NLP engine.
+- **Hybrid Text Extraction:** Reads digital PDF text via Syncfusion PDF and falls back to on-device **ML Kit OCR** for camera scans.
+- **Page-Level Citations:** Summarizes documents, extracts dates/amounts/action items, and links answers directly to source pages.
 
 </td>
 </tr>
 <tr>
 <td width="50%" valign="top">
 
-### 🔐 Triple-Layer Security
-- **AES-128 PDF password lock** (separate user/owner keys)
-- **Anti-fraud diagonal watermarks** — `CONFIDENTIAL`, `FOR KYC ONLY`, `DO NOT COPY`, `DRAFT` or custom
-- **Biometric app lock** (fingerprint / face / PIN)
-- **Vault folders** that require biometrics to open
+### 🔐 Triple-Layer Document Security
+- **AES-128 PDF Password Lock:** Standard cryptographic password protection (separate user and owner keys) that stays locked when shared over WhatsApp, Email, or Drive.
+- **Anti-Fraud Diagonal Watermarking:** Stamp `CONFIDENTIAL`, `FOR KYC ONLY`, `DO NOT COPY`, `DRAFT`, or custom text across every page to prevent ID/KYC misuse.
+- **Biometric App & Vault Lock:** Protect the app and individual Vault folders using fingerprint, face unlock, or device PIN (`local_auth`).
 
 </td>
 <td width="50%" valign="top">
 
-### ☁️ Organize & Backup
-- Color-coded **folders**, favorites, search & sort
-- Built-in **PDF viewer**, print & native **share**
-- **Google Sign-In** + **Drive API v3** backup into a
-  `Scanora Documents` folder in *your* Drive
-- **Auto-sync** new scans · Light / Dark / System theme
+### <img src="docs/readme/google_drive.svg" width="20" valign="middle"/> Personal Google Drive Backup
+- **Google Account Integration:** Sign in with Google to display your connected Google profile picture, email, and live sync status.
+- **Direct User-Owned Storage:** Uploads PDFs via **Google Drive REST API v3** into `"Scanora Documents"` in your own Google Drive—no third-party servers.
+- **Auto-Sync & One-Tap Batch Sync:** Automatically back up newly saved scans or sync all pending documents at once.
 
 </td>
 </tr>
@@ -94,55 +78,51 @@ Most scanner apps lock basic features behind subscriptions, and most "chat with 
 
 ---
 
-## 📱 Screenshots
+## 📱 App Screens
 
 <div align="center">
 
-| Home | Scanner Review | Save & Secure |
+| Home Dashboard | Multi-Page Review & Batch Filter | Save, Encrypt & Watermark |
 |:---:|:---:|:---:|
-| <img src="docs/screenshots/home.png" width="230"/> | <img src="docs/screenshots/review.png" width="230"/> | <img src="docs/screenshots/save.png" width="230"/> |
-| **AI Document Chat** | **Folders & Vault** | **Settings & Cloud Backup** |
-| <img src="docs/screenshots/chat.png" width="230"/> | <img src="docs/screenshots/folders.png" width="230"/> | <img src="docs/screenshots/settings.png" width="230"/> |
+| <img src="docs/screenshots/home.svg" width="250" alt="Home Screen"/> | <img src="docs/screenshots/review.svg" width="250" alt="Scanner Review Screen"/> | <img src="docs/screenshots/save.svg" width="250" alt="Save and Security Sheet"/> |
+| **Offline AI Document Chat** | **Folders & Biometric Vaults** | **Settings & Google Drive Account** |
+| <img src="docs/screenshots/chat.svg" width="250" alt="AI Chat Screen"/> | <img src="docs/screenshots/folders.svg" width="250" alt="Folders and Vaults Screen"/> | <img src="docs/screenshots/settings.svg" width="250" alt="Settings and Google Drive Screen"/> |
 
 <br/>
 
-<img src="docs/screenshots/demo.gif" width="280" alt="Scanora demo"/>
+### 🔄 End-to-End Workflow Preview
 
-<sub>▶️ Scan → enhance → lock with password → chat with the PDF</sub>
+<img src="docs/screenshots/demo.svg" width="100%" alt="Scanora Workflow Demo"/>
 
 </div>
 
 ---
 
-## 🔐 Security Deep-Dive
+## ☁️ Google Drive Cloud Backup
 
-| Layer | What it does | How |
-|:--|:--|:--|
-| 🛡️ **Anti-Fraud Watermark** | Stamps a translucent diagonal label on every page so a submitted ID scan can't be reused elsewhere | Syncfusion PDF graphics layer, rotated text stamp |
-| 🔒 **PDF Password** | File stays locked even when shared via WhatsApp / email / Drive | AES-128 encryption with distinct user & owner passwords |
-| 👆 **Biometric Lock** | Locks the whole app and individual vault folders | Android BiometricPrompt via `local_auth` |
-| 📦 **Local-first storage** | No third-party servers ever touch your files | App sandbox + optional *personal* Google Drive |
+<img src="docs/readme/google_drive.svg" width="38" align="left" style="margin-right: 14px"/>
+
+Scanora connects directly to **Google Drive REST API v3** using the narrow `drive.file` scope, meaning the app can only access the files it creates inside your **`"Scanora Documents"`** folder and cannot read any other personal files in your Drive.
+
+- **Connected Account Profile:** Displays your Google profile picture, display name, email address, and a real-time counter of backed-up PDFs in **Settings** and the **Home** header.
+- **Automatic & Manual Sync:** Toggle **Auto-Backup New Scans** in Settings or during PDF save, or tap **Sync Now** to upload all unsynced documents in a single batch.
+- **Preserves Encryption & Watermarks:** Password-locked and watermarked PDFs are uploaded in their encrypted/stamped state.
 
 ---
 
-## 🧠 On-Device AI Document Assistant
+## 🧠 On-Device AI Pipeline
 
 ```mermaid
 flowchart LR
-    A["📄 PDF / Scan"] --> B{"Digital text?"}
-    B -- Yes --> C["Syncfusion text extraction"]
-    B -- No --> D["ML Kit on-device OCR"]
-    C --> E["Chunking service"]
+    A["📄 Scanned PDF"] --> B{"Has Digital Text?"}
+    B -- Yes --> C["Syncfusion PDF Extractor"]
+    B -- No --> D["Google ML Kit On-Device OCR"]
+    C --> E["Document Chunking Service"]
     D --> E
-    E --> F["Retrieval (keyword scoring)"]
-    F --> G["SmolLM2-135M GGUF<br/>llama.cpp in background isolate"]
-    G --> H["💬 Answer + page citations"]
+    E --> F["Keyword & Context Retrieval"]
+    F --> G["SmolLM2-135M GGUF (llama.cpp)<br/>+ Rule-Based Extractive NLP"]
+    G --> H["💬 Answer + Clickable Page Citations"]
 ```
-
-- 🚫 **No API keys, no internet, no data upload**
-- ⚙️ Inference runs in a **background isolate** so the UI stays smooth
-- 📚 Every answer links back to the **source page** in the PDF
-- 🔓 Works on **password-protected PDFs** too (decrypted locally for reading)
 
 ---
 
@@ -150,23 +130,31 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph UI["🎨 Presentation (Flutter / Material 3)"]
-        Home & Scanner & Docs["My Scans"] & Folders & Chat["AI Chat"] & Settings
+    subgraph UI["Presentation Layer (Flutter / Material 3)"]
+        Home["Home Screen"]
+        Scanner["Scanner & Batch Filter Review"]
+        Docs["My Scans & PDF Viewer"]
+        Folders["Folders & Biometric Vaults"]
+        Chat["Offline AI Document Chat"]
+        Settings["Settings & Google Drive Profile"]
     end
-    subgraph SVC["⚙️ Services"]
-        PDF["PdfService<br/>generate · encrypt · watermark"]
-        IMG["ImageService<br/>crop · rotate · filters"]
-        BIO["BiometricService"]
-        DRV["GoogleDriveService"]
-        STO["StorageService"]
-        AI["OnDeviceAiService"]
+
+    subgraph SVC["Core Services Layer"]
+        PDF["PdfService (A4/Letter, AES-128, Watermark)"]
+        IMG["ImageService (Crop, Rotate, Batch Filters)"]
+        BIO["BiometricService (local_auth)"]
+        DRV["GoogleDriveService (OAuth 2.0 + Drive v3)"]
+        STO["StorageService (SharedPreferences + Sidecars)"]
+        AI["OnDeviceAiService (OCR + RAG + GGUF Isolate)"]
     end
-    subgraph NATIVE["📱 On-Device Engines"]
-        MLK["Google ML Kit<br/>Scanner + OCR"]
-        LLM["llama.cpp<br/>GGUF model"]
-        AUTH["Android Biometrics"]
+
+    subgraph NATIVE["On-Device Native Engines"]
+        MLK["Google ML Kit (Document Scanner & OCR)"]
+        LLM["llama_cpp_dart (SmolLM2-135M GGUF)"]
+        AUTH["Android BiometricPrompt"]
     end
-    CLOUD[("☁️ User's Google Drive<br/>Scanora Documents")]
+
+    CLOUD[("User's Personal Google Drive\n'Scanora Documents' Folder")]
 
     UI --> SVC
     IMG --> MLK
@@ -177,26 +165,32 @@ flowchart TB
 ```
 
 <details>
-<summary><b>📂 Project structure</b> (click to expand)</summary>
+<summary><b>📂 Repository Directory Structure</b></summary>
 
 ```text
-lib/
-├── app.dart / main.dart
-├── core/
-│   ├── theme/            # AppColors, AppTheme (light/dark)
-│   ├── utils/            # date & file helpers
-│   └── widgets/          # dialogs, thumbnails, loaders, logo
-├── features/
-│   ├── splash/           # animated splash
-│   ├── shell/            # bottom nav + biometric lock overlay
-│   ├── home/             # dashboard & quick actions
-│   ├── scanner/          # capture, crop, filters, review, save dialog
-│   ├── documents/        # My Scans list + PDF viewer
-│   ├── folders/          # folders & biometric vaults
-│   ├── chat/             # AI chat: extraction, chunking, retrieval, LLM providers
-│   └── settings/         # theme, security defaults, Google Drive
-├── models/               # ScannedDocument, DocumentFolder, ScanPage, AppSettings
-└── services/             # pdf, image, storage, biometric, google_drive, thumbnails
+Scanora/
+├── android/                  # Gradle Kotlin DSL, Firebase google-services.json, AndroidManifest
+├── docs/
+│   ├── readme/               # Animated SVG banner, workflow diagram, Google Drive vector logo
+│   └── screenshots/          # App screen renders (home, review, save, chat, folders, settings, demo)
+├── lib/
+│   ├── main.dart / app.dart  # Entry point & adaptive Material 3 theme setup
+│   ├── core/
+│   │   ├── theme/            # AppColors, AppTheme (Light & Dark)
+│   │   ├── utils/            # Date formatting & file size/name utilities
+│   │   └── widgets/          # GoogleDriveLogo, GoogleAccountAvatar, CustomDialogs, Thumbnails
+│   ├── features/
+│   │   ├── splash/           # Animated launch screen
+│   │   ├── shell/            # MainNavigationShell + Biometric lock overlay
+│   │   ├── home/             # Quick actions, Drive status banner, recent scans
+│   │   ├── scanner/          # Capture, Crop, FilterScreen, PageReviewScreen (Apply to All), SaveDialog
+│   │   ├── documents/        # Searchable/sortable PDF library & in-app PDF viewer
+│   │   ├── folders/          # Color-coded folders & Biometric Vault locking
+│   │   ├── chat/             # Hybrid OCR/PDF extraction, chunking, retrieval, SmolLM2 GGUF isolate
+│   │   └── settings/         # Google Drive profile & sync, Biometric lock, Watermark defaults
+│   ├── models/               # ScannedDocument, DocumentFolder, ScanPage, AppSettings
+│   └── services/             # PdfService, ImageService, GoogleDriveService, BiometricService, StorageService
+└── pubspec.yaml
 ```
 
 </details>
@@ -205,118 +199,73 @@ lib/
 
 ## 🧰 Tech Stack
 
-<div align="center">
-
-<img src="https://skillicons.dev/icons?i=flutter,dart,androidstudio,kotlin,firebase,gcp,git,github&theme=dark" alt="Tech icons"/>
-
-</div>
-
-<br/>
-
-| Layer | Technologies |
-|:--|:--|
-| **Framework** | Flutter 3.x · Dart 3.12 (AOT-compiled to native ARM) · Material 3 · Google Fonts |
-| **Computer Vision** | `google_mlkit_document_scanner` · `google_mlkit_text_recognition` · `image_picker` |
-| **On-Device AI** | `llama_cpp_dart` (llama.cpp FFI) · SmolLM2-135M Instruct **GGUF** (Q4_K_M) · custom chunking & retrieval |
-| **Image Processing** | `image` (crop, rotate, contrast, grayscale, threshold) |
-| **PDF** | `pdf` · `printing` · `syncfusion_flutter_pdf` (AES encryption, watermark, text extraction) |
-| **Security** | `local_auth` (fingerprint / face / PIN) |
-| **Cloud** | `google_sign_in` (OAuth 2.0) · Firebase Google Services · Google Drive REST API v3 via `http` |
-| **Storage & OS** | `shared_preferences` · `path_provider` · `share_plus` · `intl` |
-| **Build** | Gradle Kotlin DSL · Java 17 · split-per-ABI release APKs (~20 MB) |
+| Category | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Mobile Framework** | **Flutter 3.x & Dart 3.12** | Cross-platform UI compiled to native ARM64 machine code |
+| **On-Device LLM** | **`llama_cpp_dart` + `SmolLM2-135M-Instruct (Q4_K_M GGUF)`** | Offline LLM inference inside a background Dart isolate |
+| **Computer Vision & OCR** | **`google_mlkit_document_scanner` & `google_mlkit_text_recognition`** | Edge detection, perspective correction, and offline text recognition |
+| **PDF & Cryptography** | **`syncfusion_flutter_pdf`, `pdf`, `printing`** | Multi-page PDF generation, AES-128 password encryption, diagonal watermarks |
+| **Image Processing** | **`image` (`^4.12.0`) & `image_picker`** | Batch filters (Enhance, Grayscale, B&W), cropping, rotation, thumbnails |
+| **Biometric Security** | **`local_auth` (`^3.0.2`)** | Fingerprint, Face Unlock, and PIN protection for app & vault folders |
+| **Cloud & Auth** | **`google_sign_in`, Firebase Auth, Google Drive REST API v3 (`http`)** | Google account profile & direct PDF backup to `"Scanora Documents"` |
+| **Persistence** | **`shared_preferences` & `path_provider`** | Local document metadata, folder state, and chat history |
 
 ---
 
 ## ⚡ Installation
 
-### 📥 Option 1 — Just install the app
+### Option 1 — Install the Prebuilt Release APK (~20 MB)
 
-1. Download **`Scanora-Release.apk`** from the [**Releases**](https://github.com/jawaanquizziz/Scanora/releases) page.
-2. On your phone, allow **Install unknown apps** for your browser / file manager.
-3. Open the APK → **Install** → enjoy. 🎉
+1. Download **`Scanora-Release.apk`** from the repository root or the [**Releases**](https://github.com/jawaanquizziz/Scanora/releases) tab.
+2. Transfer it to your Android device and open it to install.
 
-> [!TIP]
-> Most phones from 2017+ are 64-bit — use `app-arm64-v8a-release.apk`. For very old phones use `app-armeabi-v7a-release.apk`.
-
-### 🛠️ Option 2 — Build from source
+### Option 2 — Build from Source
 
 ```bash
-# 1. Clone
+# 1. Clone the repository
 git clone https://github.com/jawaanquizziz/Scanora.git
 cd Scanora
 
-# 2. Get packages
+# 2. Install Flutter dependencies
 flutter pub get
 
-# 3. Run on a connected device
+# 3. Run in debug mode on a connected device
 flutter run
 
-# 4. Build small release APKs (~20 MB each)
+# 4. Build optimized split-ABI release APKs (~20 MB)
 flutter build apk --release --split-per-abi
 ```
 
-<details>
-<summary><b>☁️ Enable Google Drive backup (for your own fork)</b></summary>
-
-1. Create a Firebase project and add an Android app with package **`com.scanora.app.scanora`**.
-2. Add your signing **SHA-1** (`cd android && ./gradlew signingReport`).
-3. Enable **Google** sign-in in Firebase Auth and download **`google-services.json`** into `android/app/`.
-4. In Google Cloud Console, **enable the Google Drive API** for the same project.
-5. Under **OAuth consent screen → Audience**, add your Gmail as a **Test user** (or publish the app).
-
-</details>
-
-<details>
-<summary><b>🧠 On-device AI model</b></summary>
-
-The AI assistant uses a small quantized **GGUF** model (SmolLM2-135M Instruct, Q4_K_M, ~100 MB). The app downloads it on first use with a progress dialog and stores it locally — after that, chat works with **zero internet**.
-
-</details>
-
 ---
 
-## 🆚 Why Scanora?
+## 🆚 Comparison with Existing Solutions
 
-| | Typical scanner apps | Cloud "chat with PDF" tools | **Scanora** |
-|:--|:--:|:--:|:--:|
-| Free, clean PDFs (no watermark ads) | ❌ | — | ✅ |
-| AI summaries & Q&A | 💰 Paid / cloud | ☁️ Uploads your file | ✅ **Offline** |
-| AES password-locked PDFs | 💰 | ❌ | ✅ |
-| Anti-fraud KYC watermarks | 💰 | ❌ | ✅ |
-| Biometric vault | Limited | ❌ | ✅ |
-| Where your files live | Vendor cloud | Vendor server | **Your phone / your Drive** |
+| Capability | Traditional Scanner Apps | Cloud "Chat with PDF" Tools | **Scanora** |
+| :--- | :---: | :---: | :---: |
+| **Clean PDFs (No Brand Watermarks)** | ❌ Paid | — | ✅ **100% Free** |
+| **Apply Filter to All Pages (Batch)** | 💰 Paid Pro | — | ✅ **Built-in (1-Tap)** |
+| **AI Summarization & Document Q&A** | 💰 Cloud Subscription | ☁️ Uploads Private PDFs | ✅ **100% Offline On-Device** |
+| **AES-128 PDF Password Encryption** | 💰 Paid Pro | ❌ | ✅ **Built-in** |
+| **Anti-Fraud KYC Diagonal Watermarks** | 💰 Paid Pro | ❌ | ✅ **Presets + Custom Text** |
+| **Biometric App & Folder Vault** | Limited | ❌ | ✅ **Fingerprint / Face / PIN** |
+| **Cloud Backup Destination** | Vendor Cloud | Vendor Server | ✅ **User's Own Google Drive** |
 
 ---
 
 ## 🚀 Future Scope
 
-- [ ] 🌏 **Indian regional languages & handwriting OCR** (Hindi, Marathi, Tamil, Telugu…)
-- [ ] ✍️ **Digital e-signatures** & PDF form filling
-- [ ] 📚 **Multi-document Q&A** with an on-device vector index
-- [ ] 🧾 **Auto-categorization** & invoice-to-Excel/CSV extraction
-- [ ] 🍎 **iOS, Windows & macOS** builds from the same Flutter codebase
-- [ ] 🎙️ **Voice interaction** — offline speech-to-text & read-aloud
-
----
-
-## 🤝 Contributing
-
-Contributions, issues and feature requests are welcome!
-
-1. Fork the repo
-2. Create your branch: `git checkout -b feature/amazing-feature`
-3. Commit: `git commit -m "feat: add amazing feature"`
-4. Push: `git push origin feature/amazing-feature`
-5. Open a Pull Request 🚀
+- [ ] **Multi-Language & Handwritten OCR:** Add Devanagari (Hindi/Marathi), Tamil, Telugu, and handwriting recognition models.
+- [ ] **Digital Signatures & Form Filling:** Draw or import cryptographic e-signatures directly onto PDF pages.
+- [ ] **Multi-Document Folder RAG:** Query across an entire folder of invoices or medical reports simultaneously.
+- [ ] **Smart Expense & Table Export:** Extract receipt tables into Excel/CSV spreadsheets automatically.
+- [ ] **Cross-Platform Desktop & iOS Sync:** Expand builds to iOS, Windows, and macOS synced via Google Drive.
 
 ---
 
 <div align="center">
 
-### 💛 If Scanora helped you, drop a ⭐ on the repo!
+Built with Flutter by **[Jawaan Santh](https://github.com/jawaanquizziz)**
 
-Made with ❤️ and Flutter by **[Jawaan](https://github.com/jawaanquizziz)**
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:EA580C,100:EF4444&height=120&section=footer" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:EA580C,100:EF4444&height=100&section=footer" width="100%"/>
 
 </div>

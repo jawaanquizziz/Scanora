@@ -3,6 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../core/utils/file_utils.dart';
+import '../../core/widgets/google_drive_icon.dart';
 import '../../models/scan_page.dart';
 import '../../models/scanned_document.dart';
 import '../../services/google_drive_service.dart';
@@ -344,7 +345,7 @@ class SaveDialog {
                             children: [
                               const Row(
                                 children: [
-                                  Icon(Icons.add_to_drive_rounded, size: 18, color: AppColors.primaryBlue),
+                                  GoogleDriveLogo(size: 18),
                                   SizedBox(width: 8),
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
